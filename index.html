@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quote Generator - Mauve Style</title>
+  
+  <style>
+    /* ----------------------------------------------------------------- */
+    /* GENERAL STYLES & RESET */
+    /* ----------------------------------------------------------------- */
+    :root {
+      /* Colors updated to mauve/violet tones */
+      --primary-color: #6a00a8; /* Dark violet for buttons/borders */
+      --secondary-color: #f6f0ff; /* Very light background */
+      --accent-color: #d1007d; /* Magenta/Mauve for general total */
+      --text-color: #333;
+      --bg-light: #ffffff;
+      --border-color: #e0e0e0;
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+      font-family: 'Inter', Arial, sans-serif;
+      background-color: var(--secondary-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 0;
+      padding-bottom: 120px; /* Space for fixed total bar */
+    }
+
+    #main-container {
+      max-width: 1000px;
+      margin: 20px auto;
+      padding: 0 15px;
+    }
+
+    /* ----------------------------------------------------------------- */
+    /* FIXED HEADER */
+    /* ----------------------------------------------------------------- */
+    header {
+        position: sticky;
+        top: 0;
+        left: 0;
+        right: 0;
+        background-color: var(--bg-light);
+        border-bottom: 3px solid var(--primary-color);
+        padding: 15px 15px;
+        box-shadow: var(--shadow-md);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 50;
+    }
+    header h1 {
+        margin: 0;
+        font-size: 20px;
+        color: var(--primary-color);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* ----------------------------------------------------------------- */
+    /* QUOTE BLOCKS (CARDS) */
+    /* ----------------------------------------------------------------- */
+    .bloc {
+      background: var(--bg-light);
+      border-radius: 12px;
+      box-shadow: var(--shadow-md);
+      margin-bottom: 25px;
+      transition: all 0.3s ease;
+      overflow: hidden; 
+    }
+
+    .bloc-header {
+      background-color: #efebff; /* Very light mauve */
+      padding: 15px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      position: relative;
+    }
+
+    .bloc-title {
+      flex-grow: 1;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #dcd0ff;
+      border-radius: 6px;
+      min-width: 150px;
+      background-color: var(--bg-light);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .bloc-exemplaires {
+      width: 60px;
+      text-align: center;
+      padding: 10px;
+      border: 1px solid #dcd0ff;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+    
+    .bloc-label {
+        font-size: 14px; 
+        font-weight: 500;
+        color: #555;
+    }
+    
+    .bloc-actions {
+      display: flex;
+      gap: 5px;
+    }
+
+    /* Block Content */
+    .bloc-content {
+      padding: 0 20px 20px 20px;
+      overflow-x: auto; 
+      max-height: 1000px;
+      transition: max-height 0.4s ease-out, padding 0.4s ease-out;
+    }
+    .bloc-content.hidden-content {
+      max-height: 0;
+      padding: 0 20px;
+      overflow: hidden;
+    }
+    
+    /* ----------------------------------------------------------------- */
+    /* TABLE (SERVICE LINES) */
+    /* ----------------------------------------------------------------- */
+    table {
+      width: 100%;
+      min-width: 650px; 
+      border-collapse: collapse;
+      margin-top: 15px;
+      box-shadow: var(--shadow-sm);
+      border-radius: 8px;
+    }
+
+    thead {
+      background-color: #f8f9fa;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    th, td {
+      padding: 10px 8px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+    
+    th {
+        font-weight: 600;
+        font-size: 12px;
+        color: #555;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    td {
+        font-size: 14px;
+        background-color: var(--bg-light);
+    }
+
+    /* Inputs in table */
+    td input, td select {
+      width: 100%;
+      padding: 8px 5px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-sizing: border-box;
+      font-size: 13px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    td input:focus, td select:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(106, 0, 168, 0.2);
+      outline: none;
+    }
+    
+    .pu-input {
+        text-align: right;
+        font-family: 'Courier New', monospace;
+        font-weight: 600;
+    }
+    .pu-input[readonly] {
+        background-color: #f9f9f9;
+        color: #555;
+    }
+    .pu-input.custom {
+        color: var(--accent-color);
+        border-color: var(--accent-color);
+    }
+    
+    .total {
+        font-weight: bold;
+        text-align: right;
+        color: var(--primary-color);
+        font-size: 15px;
+    }
+
+    /* Block Footer */
+    .bloc-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 15px;
+      padding-top: 10px;
+      border-top: 1px dashed var(--border-color);
+    }
+
+    .total-bloc-valeur {
+      font-size: 20px;
+      font-weight: bold;
+      color: var(--text-color);
+    }
+
+    /* ----------------------------------------------------------------- */
+    /* BUTTONS */
+    /* ----------------------------------------------------------------- */
+    .btn-base {
+      border: none;
+      padding: 10px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 600;
+      font-size: 14px;
+      text-transform: capitalize;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Primary Buttons (New Block, Copy Detailed) */
+    .btn-action {
+      background: var(--primary-color);
+      color: white;
+      box-shadow: 0 4px 6px rgba(106, 0, 168, 0.3);
+    }
+    .btn-action:hover {
+      background: #550085;
+      box-shadow: 0 4px 8px rgba(106, 0, 168, 0.5);
+    }
+
+    /* Secondary Buttons (Line, Duplicate, Copy Summary) */
+    .btn-line {
+      background: #eee;
+      color: var(--text-color);
+      border: 1px solid #ccc;
+    }
+    .btn-line:hover {
+      background: #ddd;
+    }
+
+    /* Delete buttons */
+    .delete-btn {
+      background: #ffe6f3; 
+      color: var(--accent-color);
+      border: 1px solid var(--accent-color);
+    }
+    .delete-btn:hover {
+      background: #ffc9e2;
+    }
+    
+    .toggle-accordion {
+        border: none; 
+        background: none; 
+        cursor: pointer; 
+        font-size: 16px;
+        color: var(--primary-color);
+        padding: 5px;
+        margin-right: 5px;
+    }
+    .toggle-accordion:hover {
+        color: #550085;
+    }
+
+    /* ----------------------------------------------------------------- */
+    /* FIXED TOTAL BAR (FOOTER) */
+    /* ----------------------------------------------------------------- */
+    .fixed-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg-light);
+      border-top: 4px solid var(--accent-color);
+      padding: 15px 20px;
+      box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.15);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: right;
+    }
+
+    .total-display {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      max-width: 400px;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+
+    .total-general-label {
+      font-size: 16px;
+      color: #666;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    #total-general {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--accent-color); 
+    }
+
+    .copy-buttons {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+        max-width: 400px;
+    }
+    .copy-buttons button {
+        flex-grow: 1;
+        font-weight: 600;
+    }
+
+    /* ----------------------------------------------------------------- */
+    /* MODAL AND TOAST */
+    /* ----------------------------------------------------------------- */
+    #modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 200;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s;
+    }
+    #modal-overlay.show {
+        opacity: 1;
+        visibility: visible;
+    }
+    #modal-box {
+        background: var(--bg-light);
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: var(--shadow-md);
+        max-width: 380px;
+        width: 90%;
+        transform: translateY(-20px);
+        transition: transform 0.3s;
+    }
+    #modal-overlay.show #modal-box {
+        transform: translateY(0);
+    }
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .toast {
+      visibility: hidden;
+      min-width: 250px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 12px;
+      position: fixed;
+      z-index: 101;
+      left: 50%;
+      bottom: 140px; 
+      transform: translateX(-50%);
+      opacity: 0;
+      transition: opacity 0.3s, bottom 0.3s;
+      box-shadow: var(--shadow-md);
+    }
+    .toast.show {
+      visibility: visible;
+      opacity: 1;
+      bottom: 110px; 
+    }
+    
+    /* ----------------------------------------------------------------- */
+    /* SIMPLE ICONS */
+    /* ----------------------------------------------------------------- */
+    .icon-plus:before { content: "➕"; margin-right: 5px; }
+    .icon-trash:before { content: "🗑"; }
+    .icon-copy:before { content: "📋"; }
+    .icon-check:before { content: "✔"; }
+    .icon-x:before { content: "✖"; }
+    .icon-reset:before { content: "♻"; margin-right: 5px; }
+    .icon-chevron-down:before { content: "▼"; }
+    .icon-chevron-right:before { content: "►"; }
+    
+    /* ----------------------------------------------------------------- */
+    /* EMPTY STATE */
+    /* ----------------------------------------------------------------- */
+    #empty-state {
+        text-align: center; 
+        padding: 50px 20px; 
+        color: #999;
+        background: var(--bg-light);
+        border-radius: 12px;
+        margin-top: 40px;
+        box-shadow: var(--shadow-sm);
+    }
+    #empty-state p { margin: 5px 0 15px; }
+    #empty-state h3 { 
+        font-size: 22px; 
+        color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Fixed Header -->
+  <header>
+    <h1>Quote Generator</h1>
+    <div class="header-actions">
+        <button onclick="askResetApp()" class="btn-base btn-line icon-reset">Reset All</button>
+        <button onclick="ajouterBloc()" class="btn-base btn-action icon-plus">New Block</button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main id="main-container">
+    
+    <!-- Blocks Area -->
+    <div id="blocs">
+      <!-- Blocks will be generated here by JavaScript -->
+    </div>
+
+    <!-- Empty State Message -->
+    <div id="empty-state" style="display:none;">
+        <p style="font-size: 30px;">🖨️</p>
+        <h3>Your quote is empty</h3>
+        <p>Click on "New Block" above or below to start.</p>
+        <button onclick="ajouterBloc()" class="btn-base btn-action" style="margin-top: 15px;">Create Block</button>
+    </div>
+
+  </main>
+
+  <!-- Fixed Total Bar (Bottom) -->
+  <div class="fixed-footer">
+    <div class="total-display">
+      <span class="total-general-label">Grand Total (Incl. VAT)</span>
+      <div id="total-general">0.00 €</div>
+    </div>
+
+    <div class="copy-buttons">
+      <!-- Copy Summary Button -->
+      <button onclick="copierDevis()" class="btn-base btn-line icon-copy">Copy Summary</button>
+      <!-- Copy Detailed Button -->
+      <button onclick="copierDevisDetaille()" class="btn-base btn-action icon-copy">Copy Details</button>
+    </div>
+  </div>
+
+  <!-- CUSTOM MODAL (Custom Confirmation Window) -->
+  <div id="modal-overlay">
+      <div id="modal-box">
+          <h3 style="font-size: 18px; color: var(--text-color); margin-bottom: 10px;" id="modal-title">Confirmation</h3>
+          <p style="color: #666; margin-bottom: 20px;" id="modal-message">Are you sure?</p>
+          <div class="modal-actions">
+              <button onclick="closeModal()" class="btn-base btn-line cancel-btn">Cancel</button>
+              <button id="modal-confirm-btn" class="btn-base confirm-btn">Confirm</button>
+          </div>
+      </div>
+  </div>
+
+  <!-- Toast Notification (Message "Copied" at the bottom) -->
+  <div id="toast" class="toast">
+    <span class="icon-check"></span>
+    <span id="toast-message">Notification</span>
+  </div>
+
+  <!-- START OF JAVASCRIPT CODE (Logic and Calculations) -->
+  <script>
+    // =================================================================
+    // DATA (Prices remain the same)
+    // =================================================================
+    window.services = {
+      'Printing': {
+        'B/W': {
+          'A4': [{ min: 1, prix: 0.20 }, { min: 10, prix: 0.15 }, { min: 25, prix: 0.125 }, { min: 50, prix: 0.10 }, { min: 100, prix: 0.09 }, { min: 250, prix: 0.08 }, { min: 500, prix: 0.07 }, { min: 750, prix: 0.06 }, { min: 1000, prix: 0.05 }, { min: 2500, prix: 0.04 }, { min: 5000, prix: 0.03 }, { min: 7500, prix: 0.028 }, { min: 10000, prix: 0.026 }, { min: Infinity, prix: 0.024 }],
+          'A3': [{ min: 1, prix: 0.40 }, { min: 10, prix: 0.30 }, { min: 25, prix: 0.25 }, { min: 50, prix: 0.20 }, { min: 100, prix: 0.18 }, { min: 250, prix: 0.16 }, { min: 500, prix: 0.14 }, { min: 750, prix: 0.12 }, { min: 1000, prix: 0.10 }, { min: 2500, prix: 0.08 }, { min: 5000, prix: 0.06 }, { min: 7500, prix: 0.056 }, { min: 10000, prix: 0.052 }, { min: Infinity, prix: 0.048 }],
+          'A5': [{ min: 1, prix: 0.20 }], 'A6': [{ min: 1, prix: 0.20 }]
+        },
+        'Color': {
+          'A4': [{ min: 1, prix: 0.45 }, { min: 10, prix: 0.40 }, { min: 25, prix: 0.36 }, { min: 50, prix: 0.32 }, { min: 100, prix: 0.28 }, { min: 250, prix: 0.24 }, { min: 500, prix: 0.20 }, { min: 750, prix: 0.16 }, { min: 1000, prix: 0.12 }, { min: 2500, prix: 0.10 }, { min: 5000, prix: 0.09 }, { min: 7500, prix: 0.08 }, { min: 10000, prix: 0.07 }, { min: Infinity, prix: 0.06 }],
+          'A3': [{ min: 1, prix: 0.90 }, { min: 10, prix: 0.80 }, { min: 25, prix: 0.72 }, { min: 50, prix: 0.64 }, { min: 100, prix: 0.56 }, { min: 250, prix: 0.48 }, { min: 500, prix: 0.40 }, { min: 750, prix: 0.32 }, { min: 1000, prix: 0.24 }, { min: 2500, prix: 0.20 }, { min: 5000, prix: 0.18 }, { min: 7500, prix: 0.16 }, { min: 10000, prix: 0.14 }, { min: Infinity, prix: 0.12 }],
+          'A5': [{ min: 1, prix: 0.45 }], 'A6': [{ min: 1, prix: 0.45 }]
+        }
+      },
+      'Paper': {
+        '100g': { 'A3+': [{ max: Infinity, prix: 0.100 }], 'A3': [{ max: Infinity, prix: 0.050 }], 'A4+': [{ max: Infinity, prix: 0.050 }], 'A4': [{ max: Infinity, prix: 0.025 }], 'A5+': [{ max: Infinity, prix: 0.025 }], 'A5': [{ max: Infinity, prix: 0.0125 }], 'A6+': [{ max: Infinity, prix: 0.0125 }], 'A6': [{ max: Infinity, prix: 0.00625 }] },
+        '120g': { 'A3+': [{ max: Infinity, prix: 0.100 }], 'A3': [{ max: Infinity, prix: 0.060 }], 'A4+': [{ max: Infinity, prix: 0.060 }], 'A4': [{ max: Infinity, prix: 0.030 }], 'A5+': [{ max: Infinity, prix: 0.030 }], 'A5': [{ max: Infinity, prix: 0.015 }], 'A6+': [{ max: Infinity, prix: 0.015 }], 'A6': [{ max: Infinity, prix: 0.0075 }] },
+        '160g': { 'A3+': [{ max: Infinity, prix: 0.200 }], 'A3': [{ max: Infinity, prix: 0.160 }], 'A4+': [{ max: Infinity, prix: 0.160 }], 'A4': [{ max: Infinity, prix: 0.080 }], 'A5+': [{ max: Infinity, prix: 0.080 }], 'A5': [{ max: Infinity, prix: 0.040 }], 'A6+': [{ max: Infinity, prix: 0.040 }], 'A6': [{ max: Infinity, prix: 0.020 }] },
+        '200g': { 'A3+': [{ max: Infinity, prix: 0.350 }], 'A3': [{ max: Infinity, prix: 0.300 }], 'A4+': [{ max: Infinity, prix: 0.300 }], 'A4': [{ max: Infinity, prix: 0.150 }], 'A5+': [{ max: Infinity, prix: 0.150 }], 'A5': [{ max: Infinity, prix: 0.075 }], 'A6+': [{ max: Infinity, prix: 0.075 }], 'A6': [{ max: Infinity, prix: 0.0375 }] },
+        '300g': { 'A3+': [{ max: Infinity, prix: 0.450 }], 'A3': [{ max: Infinity, prix: 0.400 }], 'A4+': [{ max: Infinity, prix: 0.400 }], 'A4': [{ max: Infinity, prix: 0.200 }], 'A5+': [{ max: Infinity, prix: 0.200 }], 'A5': [{ max: Infinity, prix: 0.100 }], 'A6+': [{ max: Infinity, prix: 0.100 }], 'A6': [{ max: Infinity, prix: 0.050 }] },
+        '350g': { 'A3+': [{ max: Infinity, prix: 0.550 }], 'A3': [{ max: Infinity, prix: 0.500 }], 'A4+': [{ max: Infinity, prix: 0.500 }], 'A4': [{ max: Infinity, prix: 0.250 }], 'A5+': [{ max: Infinity, prix: 0.250 }], 'A5': [{ max: Infinity, prix: 0.125 }], 'A6+': [{ max: Infinity, prix: 0.125 }], 'A6': [{ max: Infinity, prix: 0.0625 }] },
+        'gloss 135g': { 'A3+': [{ max: Infinity, prix: 0.550 }], 'A3': [{ max: Infinity, prix: 0.500 }], 'A4+': [{ max: Infinity, prix: 0.500 }], 'A4': [{ max: Infinity, prix: 0.250 }], 'A5+': [{ max: Infinity, prix: 0.250 }], 'A5': [{ max: Infinity, prix: 0.125 }], 'A6+': [{ max: Infinity, prix: 0.125 }], 'A6': [{ max: Infinity, prix: 0.0625 }] },
+        'gloss 200g': { 'A3+': [{ max: Infinity, prix: 0.650 }], 'A3': [{ max: Infinity, prix: 0.600 }], 'A4+': [{ max: Infinity, prix: 0.600 }], 'A4': [{ max: Infinity, prix: 0.300 }], 'A5+': [{ max: Infinity, prix: 0.300 }], 'A5': [{ max: Infinity, prix: 0.150 }], 'A6+': [{ max: Infinity, prix: 0.150 }], 'A6': [{ max: Infinity, prix: 0.075 }] }
+      },
+      'Finishing': {
+        'Booklet A4': [{ max: Infinity, prix: 0.02, mint: 6.5 }],
+        'Booklet A3': [{ max: Infinity, prix: 0.03, mint: 6.5 }],
+        'Booklet + cut A4': [{ max: Infinity, prix: 0.025, mint: 6.5 }],
+        'Booklet + cut A3': [{ max: Infinity, prix: 0.035, mint: 6.5 }],
+        'Folding 2 & 3 A4': [{ max: Infinity, prix: 0.0125, mint: 6.5 }],
+        'Folding 2 & 3 A3': [{ max: Infinity, prix: 0.025, mint: 6.5 }],
+        'Pre Folds': [{ max: Infinity, prix: 0.15, mint: 6.5 }],
+        'cut': [{ max: Infinity, prix: 0.0025, mint: 3.5 }],
+        'perfo': [{ max: Infinity, prix: 0.0025, mint: 3.5 }],
+        'impo': [{ max: Infinity, prix: 5 }],
+        'Staple': [{ max: Infinity, prix: 0.5 }]
+      },
+      'Lamination': {
+        'A5': [{ min: 1, prix: 1}, { min: 10, prix: 0.85}, { min: 25, prix: 0.75}],
+        'A4': [{ min: 1, prix: 1.25}, { min: 10, prix: 1}, { min: 25, prix: 0.85}],
+        'A3': [{ min: 1, prix: 2.5}, { min: 10, prix: 2}, { min: 25, prix: 1.7}],
+        'A2': [{ min: 1, prix: 5}, { min: 10, prix: 4.5}, { min: 25, prix: 4}],
+        'A1': [{ min: 1, prix: 9.5}, { min: 10, prix: 8.5}, { min: 25, prix: 7.5}],
+        'A0': [{ min: 1, prix: 18.5}, { min: 10, prix: 16.5}, { min: 25, prix: 14.5}]
+      },
+      'Plan': {
+        'B/W': { 'A2': [{ min: 1, prix: 1.2}], 'A1': [{ min: 1, prix: 2.4}], 'A0': [{ min: 1, prix: 4.8}] },
+        'Color': { 'A2': [{ min: 1, prix: 4.8}], 'A1': [{ min: 1, prix: 9.6}], 'A0': [{ min: 1, prix: 19.2}] },
+        'Fold': [{prix: 0.6 }]
+      },
+      'Big size': {
+        'Mat': { 'A2': [{ min: 1, prix: 9}], 'A1': [{ min: 1, prix: 14}], 'A0': [{ min: 1, prix: 24}] },
+        'Gloss': { 'A2': [{ min: 1, prix: 12}], 'A1': [{ min: 1, prix: 17}], 'A0': [{ min: 1, prix: 27}] }
+      },
+      'binding': {
+        'smale': { 'simple': [{ min: 1, prix: 1.25}], 'plastic': [{ min: 1, prix: 1.85}] },
+        'medium': { 'simple': [{ min: 1, prix: 2}], 'plastic': [{ min: 1, prix: 2.6}] },
+        'large': { 'simple': [{ min: 1, prix: 2.5}], 'plastic': [{ min: 1, prix: 3.1}] }
+      },
+      'special':{
+        'cdv':[ { min: 1, prix: 0.14, mint: 14}, { min: 101, prix: 0.135, mint: 27}]
+      }
+    };
+
+    // =================================================================
+    // APPLICATION LOGIC
+    // =================================================================
+    let blocId = 0;
+
+    // Initialization
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        const savedData = localStorage.getItem('devisData');
+        const parsedData = savedData ? JSON.parse(savedData) : null;
+        
+        if (parsedData && parsedData.length > 0) {
+            loadFromJSON(savedData);
+        } else {
+            // Add a clean, empty block if no data is found
+            ajouterBloc(true, true); 
+        }
+      } catch (e) {
+        // Fallback to adding a clean block
+        ajouterBloc(true, true);
+      }
+      checkEmptyState();
+      recalculer();
+    });
+
+    // --- MODAL SYSTEM (Custom Confirmation) ---
+    function openModal(title, message, onConfirm) {
+        document.getElementById('modal-title').textContent = title;
+        document.getElementById('modal-message').textContent = message;
+        
+        const overlay = document.getElementById('modal-overlay');
+        const confirmBtn = document.getElementById('modal-confirm-btn');
+        
+        overlay.classList.add('show');
+
+        // Replace button to ensure a single event listener
+        const newBtn = confirmBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+        
+        newBtn.onclick = () => {
+            if(onConfirm) onConfirm();
+            closeModal();
+        };
+    }
+
+    function closeModal() {
+        document.getElementById('modal-overlay').classList.remove('show');
+    }
+
+    // --- MAIN ACTION FUNCTIONS ---
+
+    function askResetApp() {
+        openModal(
+          'Reset Quote?', 
+          'Are you sure you want to erase everything? This action is irreversible and will delete all blocks and lines.', 
+          () => {
+            document.getElementById('blocs').innerHTML = '';
+            try { localStorage.removeItem('devisData'); } catch(e) {}
+            // Add one clean block after reset
+            ajouterBloc(true, true); 
+            checkEmptyState();
+            showToast("Quote reset!");
+        });
+    }
+
+    function askDeleteBloc(bloc) {
+        openModal(
+          'Delete this Block?', 
+          'Do you want to delete this block from your quote?', 
+          () => {
+            bloc.style.opacity = '0';
+            bloc.style.maxHeight = '0';
+            bloc.style.marginBottom = '0';
+            setTimeout(() => {
+                bloc.remove();
+                recalculer();
+                checkEmptyState();
+            }, 300);
+            showToast("Block deleted.");
+        });
+    }
+
+    /**
+     * Adds a new block to the quote.
+     * @param {boolean} initialEmpty - True if the block must start with empty values (used for first load or explicit New Block).
+     * @param {boolean} doRecalc - True to force recalculation and state check.
+     */
+    function ajouterBloc(initialEmpty = false, doRecalc = true) {
+      const blocsContainer = document.getElementById('blocs');
+      const bloc = document.createElement('div');
+      bloc.className = 'bloc';
+      const id = 'bloc-' + blocId++;
+      bloc.setAttribute('data-bloc-id', id);
+
+      // Enforce empty values if initialEmpty is true
+      const initialTitle = initialEmpty ? "" : "New Block";
+      const initialQty = initialEmpty ? "" : "1";
+      const placeholderTitle = "Block Name (e.g., A5 Flyers)";
+      const placeholderQty = "Qty";
+
+
+      bloc.innerHTML = `
+        <div class="bloc-header">
+            <button class="toggle-accordion" title="Toggle content visibility" onclick="toggleAccordion(this)">
+                <span class="icon-chevron-down"></span>
+            </button>
+            <input type="text" placeholder="${placeholderTitle}" value="${initialTitle}" class="bloc-title" oninput="recalculer()">
+            
+            <label class="bloc-label">Copies Qty:</label>
+            <input type="number" value="${initialQty}" min="0" placeholder="${placeholderQty}" class="bloc-exemplaires" oninput="majExemplairesLignes(this)">
+            
+            <div class="bloc-actions">
+                <button onclick="dupliquerBloc(this.closest('.bloc'))" title="Duplicate block" class="btn-base btn-line icon-copy">Duplicate</button>
+                <button onclick="askDeleteBloc(this.closest('.bloc'))" title="Delete block" class="btn-base delete-btn icon-trash"></button>
+            </div>
+        </div>
+
+        <div class="bloc-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Service</th>
+                        <th>Type</th>
+                        <th>Size</th>
+                        <th style="text-align: center;">Originals</th>
+                        <th style="text-align: center;">Qty</th>
+                        <th style="text-align: right;">Unit Price (€)</th>
+                        <th style="text-align: right;">Total (€)</th>
+                        <th style="width: 30px;"></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div class="bloc-footer">
+                <button onclick="ajouterLigne(this)" class="btn-base btn-line icon-plus">Add Line</button>
+                <div>
+                    <span style="font-weight: 500;">Sub-Total:</span> 
+                    <span class="total-bloc-valeur">0.00</span> €
+                </div>
+            </div>
+        </div>
+      `;
+
+      blocsContainer.appendChild(bloc);
+      
+      // Add a default line only if not empty block
+      if(!initialEmpty) {
+          ajouterLigne(bloc.querySelector('button[onclick^="ajouterLigne"]'));
+      }
+      
+      if(doRecalc) {
+          recalculer();
+          checkEmptyState();
+          // Only scroll if it's not the initial empty block
+          if(!initialEmpty) {
+             bloc.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+      }
+    }
+
+    function ajouterLigne(btn) {
+      const bloc = btn.closest('.bloc');
+      const tbody = bloc.querySelector('tbody');
+      // Use the value from the block's main Qty, defaulting to 1 if empty/zero/initialEmpty
+      const exBloc = parseFloat(bloc.querySelector('.bloc-exemplaires').value) || 1;
+      
+      const tr = document.createElement('tr');
+
+      tr.innerHTML = `
+        <td><select class="service-category" onchange="majTypeOptions(this)"><option value="">- Select -</option></select></td>
+        <td><select class="service-type" disabled onchange="majFormatOptions(this)"><option value="">- Type -</option></select></td>
+        <td><select class="service-format" disabled onchange="recalculer()"><option value="">- Size -</option></select></td>
+        <td><input type="number" value="1" min="1" class="ligne-originaux" style="width: 50px; text-align: center;" oninput="recalculer()"></td>
+        <td><input type="number" value="${exBloc}" min="0" class="ligne-exemplaire" style="width: 50px; text-align: center;" oninput="recalculer()"></td>
+        <td><input type="number" step="0.0001" placeholder="0.0000" class="pu-input" oninput="recalculer()"></td>
+        <td class="total">0.00</td>
+        <td>
+            <button onclick="this.closest('tr').remove(); recalculer()" style="color: var(--accent-color); border: none; background: none; cursor: pointer; font-size: 14px;">
+                <span class="icon-x"></span>
+            </button>
+        </td>
+      `;
+
+      // Fill Categories
+      const selCat = tr.querySelector('.service-category');
+      Object.keys(window.services).forEach(k => {
+          const opt = document.createElement('option');
+          opt.value = k; opt.textContent = k;
+          selCat.appendChild(opt);
+      });
+
+      tbody.appendChild(tr);
+    }
+
+    // --- CALCULATIONS & CASCADES ---
+
+    function majTypeOptions(selCat) {
+        const tr = selCat.closest('tr');
+        const selType = tr.querySelector('.service-type');
+        const selFmt = tr.querySelector('.service-format');
+        const cat = selCat.value;
+
+        selType.innerHTML = '<option value="">- Type -</option>';
+        selFmt.innerHTML = '<option value="">- Size -</option>';
+        
+        if(cat && window.services[cat]) {
+            selType.disabled = false;
+            selType.style.backgroundColor = '#fff';
+            
+            const data = window.services[cat];
+            const is3Lvl = Object.values(data).some(v => !Array.isArray(v));
+            
+            Object.keys(data).forEach(k => {
+                const opt = document.createElement('option');
+                opt.value = k; opt.textContent = k;
+                selType.appendChild(opt);
+            });
+            
+            if(!is3Lvl) {
+               selFmt.disabled = true;
+               selFmt.style.backgroundColor = '#eee';
+            } else {
+               selFmt.disabled = true;
+               selFmt.style.backgroundColor = '#eee';
+            }
+        } else {
+            selType.disabled = true;
+            selType.style.backgroundColor = '#eee';
+            selFmt.disabled = true;
+            selFmt.style.backgroundColor = '#eee';
+        }
+        recalculer();
+    }
+
+    function majFormatOptions(selType) {
+        const tr = selType.closest('tr');
+        const cat = tr.querySelector('.service-category').value;
+        const type = selType.value;
+        const selFmt = tr.querySelector('.service-format');
+        
+        selFmt.innerHTML = '<option value="">- Size -</option>';
+        
+        try {
+            const data = window.services[cat][type];
+            if (data && !Array.isArray(data)) {
+                selFmt.disabled = false;
+                selFmt.style.backgroundColor = '#fff';
+                
+                Object.keys(data).forEach(k => {
+                    const opt = document.createElement('option');
+                    opt.value = k; opt.textContent = k;
+                    selFmt.appendChild(opt);
+                });
+            } else {
+                selFmt.disabled = true;
+                selFmt.style.backgroundColor = '#eee';
+            }
+        } catch(e) {
+            selFmt.disabled = true;
+            selFmt.style.backgroundColor = '#eee';
+        }
+
+        recalculer();
+    }
+
+    function majExemplairesLignes(input) {
+        const val = input.value;
+        const bloc = input.closest('.bloc');
+        // Update all line Qty inputs in the block
+        bloc.querySelectorAll('.ligne-exemplaire').forEach(inp => inp.value = val);
+        recalculer();
+    }
+
+    function recalculer() {
+        let totalGeneral = 0;
+        const lignesParService = {}; 
+        const dataLignes = [];
+
+        // 1. COLLECT QUANTITIES FOR DEGRESSIVITY (Tiered Pricing)
+        document.querySelectorAll('.bloc').forEach(bloc => {
+            bloc.querySelectorAll('tbody tr').forEach(tr => {
+                const cat = tr.querySelector('.service-category').value;
+                const type = tr.querySelector('.service-type').value;
+                const fmt = tr.querySelector('.service-format').value;
+                
+                if(!cat || !type) return;
+
+                let key = `${cat}|${type}`;
+                const isFormatUsed = !tr.querySelector('.service-format').disabled;
+                if(fmt && isFormatUsed) key += `|${fmt}`;
+                
+                const orig = parseFloat(tr.querySelector('.ligne-originaux').value) || 0;
+                const ex = parseFloat(tr.querySelector('.ligne-exemplaire').value) || 0;
+                const qte = orig * ex; // Total quantity for the line
+
+                let keyForPrice = key;
+                let qteForPrice = qte;
+                
+                // Special handling for A5/A6 printing to base price on A4 volume
+                if(['Printing','Plan','Big size'].includes(cat)) {
+                    if(fmt === 'A5') { qteForPrice = qte / 2; keyForPrice = key.replace('|A5', '|A4'); }
+                    if(fmt === 'A6') { qteForPrice = qte / 4; keyForPrice = key.replace('|A6', '|A4'); }
+                }
+
+                if(!lignesParService[keyForPrice]) lignesParService[keyForPrice] = 0;
+                lignesParService[keyForPrice] += qteForPrice;
+                
+                dataLignes.push({ tr, key, keyForPrice, qte, cat, type, fmt });
+            });
+        });
+
+        // 2. APPLY PRICES & UPDATE DISPLAY
+        document.querySelectorAll('.bloc').forEach(bloc => {
+            let totalBloc = 0;
+            const qtyExemplaires = parseFloat(bloc.querySelector('.bloc-exemplaires').value) || 0;
+
+            bloc.querySelectorAll('tbody tr').forEach(tr => {
+                const data = dataLignes.find(d => d.tr === tr);
+                const puInput = tr.querySelector('.pu-input');
+                const totalCell = tr.querySelector('.total');
+
+                if(!data) {
+                    totalCell.textContent = '0.00';
+                    return;
+                }
+
+                let paliers = null;
+                try {
+                    const root = window.services[data.cat][data.type];
+                    paliers = Array.isArray(root) ? root : root[data.fmt];
+                } catch(e) { /* Incomplete selection */ }
+
+                let puBase = 0;
+                let minTotal = 0;
+                
+                if(paliers) {
+                   const totalQte = lignesParService[data.keyForPrice] || 0;
+                   // Find the correct tier
+                   const palierTrouve = [...paliers].reverse().find(p => (p.min||0) <= totalQte) || paliers[0];
+                   puBase = palierTrouve ? (palierTrouve.prix || 0) : 0;
+                   minTotal = palierTrouve ? (palierTrouve.mint || 0) : 0;
+                }
+
+                // Reverse the A5/A6 pricing adjustment for the unit price
+                if(['Printing','Plan','Big size'].includes(data.cat)) {
+                    if(data.fmt === 'A5' && data.keyForPrice.includes('A4')) puBase /= 2;
+                    if(data.fmt === 'A6' && data.keyForPrice.includes('A4')) puBase /= 4;
+                }
+                
+                // Update the placeholder of the Unit Price
+                puInput.placeholder = puBase.toFixed(4);
+                
+                const puManuel = parseFloat(puInput.value);
+                const puFinal = isNaN(puManuel) || puManuel === 0 ? puBase : puManuel;
+
+                // Style to indicate a manual UP
+                if(!isNaN(puManuel) && puManuel !== puBase && puManuel > 0) {
+                     puInput.classList.add('custom');
+                } else {
+                    puInput.classList.remove('custom');
+                    if(puManuel === 0) puInput.value = ''; // Reset input if 0 is entered
+                }
+
+                // Line Total (with minimum)
+                let tot = data.qte * puFinal;
+                if(minTotal > 0 && data.qte > 0 && tot < minTotal) tot = minTotal; 
+
+                totalCell.textContent = tot.toFixed(2);
+                totalBloc += tot;
+            });
+            
+            // Store block total and copies quantity in data attributes
+            const totalElement = bloc.querySelector('.total-bloc-valeur');
+            totalElement.textContent = totalBloc.toFixed(2);
+            bloc.dataset.total = totalBloc.toFixed(2);
+            bloc.dataset.qty = qtyExemplaires;
+
+
+            totalGeneral += totalBloc;
+        });
+
+        document.getElementById('total-general').textContent = totalGeneral.toFixed(2) + ' €';
+        saveData();
+    }
+
+    // --- SAVE & LOAD ---
+
+    function saveData() {
+        try {
+            const data = [];
+            document.querySelectorAll('.bloc').forEach(b => {
+                const lines = [];
+                b.querySelectorAll('tbody tr').forEach(tr => {
+                    lines.push({
+                        c: tr.querySelector('.service-category').value,
+                        t: tr.querySelector('.service-type').value,
+                        f: tr.querySelector('.service-format').value,
+                        o: tr.querySelector('.ligne-originaux').value,
+                        e: tr.querySelector('.ligne-exemplaire').value,
+                        p: tr.querySelector('.pu-input').value
+                    });
+                });
+                data.push({
+                    title: b.querySelector('.bloc-title').value,
+                    qty: b.querySelector('.bloc-exemplaires').value,
+                    lines: lines
+                });
+            });
+            localStorage.setItem('devisData', JSON.stringify(data));
+        } catch(e) {
+          console.error("Local save error:", e);
+        }
+    }
+
+    function loadFromJSON(json) {
+        const data = JSON.parse(json);
+        document.getElementById('blocs').innerHTML = '';
+        
+        if (data.length === 0) {
+            // If saved data is an empty array, add one clean block
+            ajouterBloc(true, false);
+            return;
+        }
+
+        data.forEach(d => {
+            // Do not force recalculation inside the loop
+            // The argument 'false' means it's not an initial empty block, so it will add a default line
+            ajouterBloc(false, false); 
+            const b = document.getElementById('blocs').lastElementChild;
+            
+            // Keep the title and qty as saved (they might be empty strings)
+            b.querySelector('.bloc-title').value = d.title || '';
+            b.querySelector('.bloc-exemplaires').value = d.qty || '';
+            
+            const tbody = b.querySelector('tbody');
+            tbody.innerHTML = ''; // Clear the default line added by ajouterBloc(false, false)
+            
+            d.lines.forEach(l => {
+                ajouterLigne(b.querySelector('button[onclick^="ajouterLigne"]'));
+                const tr = tbody.lastElementChild;
+                
+                tr.querySelector('.service-category').value = l.c;
+                majTypeOptions(tr.querySelector('.service-category'));
+                
+                tr.querySelector('.service-type').value = l.t;
+                majFormatOptions(tr.querySelector('.service-type'));
+                
+                tr.querySelector('.service-format').value = l.f;
+                tr.querySelector('.ligne-originaux').value = l.o;
+                tr.querySelector('.ligne-exemplaire').value = l.e;
+                tr.querySelector('.pu-input').value = l.p;
+            });
+
+            // If a loaded block has no lines, ensure the block content is not mistakenly closed
+            if (d.lines.length === 0) {
+                // Remove the extra default line if it was added and not intended
+                if (tbody.children.length > 0) tbody.innerHTML = '';
+            }
+        });
+        recalculer(); // Final recalculation after all blocks are loaded
+    }
+
+    // --- UI UTILITIES ---
+
+    function checkEmptyState() {
+        const isEmpty = document.querySelectorAll('.bloc').length === 0;
+        document.getElementById('empty-state').style.display = isEmpty ? 'block' : 'none';
+    }
+
+    function dupliquerBloc(bloc) {
+        // Save all data
+        try {
+            saveData(); 
+            const data = JSON.parse(localStorage.getItem('devisData'));
+            
+            // Find the index of the block to duplicate
+            let index = Array.from(bloc.parentNode.children).indexOf(bloc);
+
+            if(index > -1 && data.length > index) {
+                const duplicatedData = JSON.parse(JSON.stringify(data[index]));
+                // Modify the title to indicate it's a copy
+                duplicatedData.title += " (Copy)"; 
+                data.splice(index + 1, 0, duplicatedData);
+                loadFromJSON(JSON.stringify(data));
+                
+                // Find the new block to scroll to
+                const newBloc = document.getElementById('blocs').children[index + 1];
+                if (newBloc) {
+                     newBloc.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                showToast("Block duplicated!");
+            } else {
+                showToast("Duplication error.", 'red');
+            }
+        } catch(e) {
+             console.error("Duplication error", e);
+             showToast("Duplication error.", 'red');
+        }
+    }
+
+    function toggleAccordion(btn) {
+        const bloc = btn.closest('.bloc');
+        const content = bloc.querySelector('.bloc-content');
+        const icon = btn.querySelector('span');
+
+        if(content.classList.contains('hidden-content')) {
+             content.classList.remove('hidden-content');
+             icon.classList.remove('icon-chevron-right');
+             icon.classList.add('icon-chevron-down');
+             // Adjust padding after opening
+             setTimeout(() => {
+                content.style.paddingTop = '15px';
+                content.style.paddingBottom = '20px';
+             }, 300); 
+        } else {
+             content.style.paddingTop = '0';
+             content.style.paddingBottom = '0';
+             content.classList.add('hidden-content');
+             icon.classList.remove('icon-chevron-down');
+             icon.classList.add('icon-chevron-right');
+        }
+    }
+    
+    // --- COPY TO CLIPBOARD ---
+    function copierDevis() {
+        generateTextReport(false);
+    }
+    function copierDevisDetaille() {
+        generateTextReport(true);
+    }
+
+    function generateTextReport(detailed) {
+        let text = ""; 
+
+        let totalG = 0;
+
+        document.querySelectorAll('.bloc').forEach((b, i) => {
+            const title = b.querySelector('.bloc-title').value || `Block ${i+1} (Untitled)`;
+            const totalB = parseFloat(b.dataset.total) || 0;
+            const qtyExemplaires = parseFloat(b.dataset.qty) || 0;
+
+            totalG += totalB;
+            
+            // --- Summary Logic (Copy Summary - detailed = false) ---
+            if (!detailed) {
+                // Calculate average UP for display (avoid division by zero)
+                const puMoyen = qtyExemplaires > 0 ? totalB / qtyExemplaires : 0;
+
+                // Format: Block Name 10 pc x 0.5000€ -> 5.00€
+                const qtyFormatted = qtyExemplaires.toFixed(0);
+                // Use 4 decimals, but simplify to .00 if exactly zero
+                const puFormatted = puMoyen.toFixed(4).replace(/\.0000$/, '.00'); 
+                const totalFormatted = totalB.toFixed(2);
+                
+                // REMOVED quotes around the title
+                text += `${title} ${qtyFormatted} pc x ${puFormatted}€ -> ${totalFormatted} €\n`;
+            } 
+            
+            // --- Detailed Logic (Copy Details - detailed = true) ---
+            else {
+                text += `Block: ${title}\n`;
+                b.querySelectorAll('tbody tr').forEach((tr) => {
+                    const cat = tr.querySelector('.service-category').value;
+                    if(!cat) return;
+                    
+                    const type = tr.querySelector('.service-type').value;
+                    const fmt = tr.querySelector('.service-format').value;
+                    
+                    const orig = parseFloat(tr.querySelector('.ligne-originaux').value)||0;
+                    const ex = parseFloat(tr.querySelector('.ligne-exemplaire').value)||0;
+                    const qte = orig * ex;
+
+                    const puInput = tr.querySelector('.pu-input');
+                    const puBase = parseFloat(puInput.placeholder) || 0; 
+                    const puManuel = parseFloat(puInput.value);
+                    const puFinal = isNaN(puManuel) || puManuel === 0 ? puBase : puManuel;
+
+                    const totalCell = tr.querySelector('.total');
+                    const tot = parseFloat(totalCell ? totalCell.textContent : 0) || 0;
+                    
+                    let lineName = cat;
+                    if(type) lineName += ` - ${type}`;
+                    const isFormatUsed = !tr.querySelector('.service-format').disabled;
+                    if(fmt && isFormatUsed) lineName += ` - ${fmt}`;
+                    
+                    const puAffiche = puFinal.toFixed(4); 
+                    const totalFormatted = tot.toFixed(2);
+                    text += `  - [${lineName}] | Total Qty: ${qte} | UP: ${puAffiche} € | TOTAL: ${totalFormatted} €\n`;
+                });
+
+                // Display block sub-total in detailed mode
+                text += `  Block Sub-Total: ${totalB.toFixed(2)} €\n\n`;
+            }
+        });
+        
+        // Display grand total (in both modes)
+        text += `\n================================\n`;
+        text += `GRAND TOTAL: ${totalG.toFixed(2)} € Incl. VAT`;
+        
+        const el = document.createElement('textarea');
+        el.value = text;
+        el.style.position = 'absolute';
+        el.style.left = '-9999px';
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy'); 
+        document.body.removeChild(el);
+        
+        showToast("Copied to clipboard!");
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        document.getElementById('toast-message').textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+  </script>
+</body>
+</html>
+

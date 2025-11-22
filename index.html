@@ -1485,12 +1485,12 @@
                 const totalFormatted = totalB.toFixed(2);
                 
                 // REMOVED quotes around the title
-                text += `${title} ${qtyFormatted} pc x ${puFormatted}€ -> ${totalFormatted} €\n`;
+                text += `${title} ${qtyFormatted} | pc x ${puFormatted}€ -> ${totalFormatted} €\n`;
             } 
             
             // --- Detailed Logic (Copy Details - detailed = true) ---
             else {
-                text += `Block: ${title}\n`;
+                text += `${title}\n`;
                 b.querySelectorAll('tbody tr').forEach((tr) => {
                     const cat = tr.querySelector('.service-category').value;
                     if(!cat) return;
@@ -1511,17 +1511,17 @@
                     const tot = parseFloat(totalCell ? totalCell.textContent : 0) || 0;
                     
                     let lineName = cat;
-                    if(type) lineName += ` - ${type}`;
+                    if(type) lineName += ` ${type}`;
                     const isFormatUsed = !tr.querySelector('.service-format').disabled;
-                    if(fmt && isFormatUsed) lineName += ` - ${fmt}`;
+                    if(fmt && isFormatUsed) lineName += ` ${fmt}`;
                     
                     const puAffiche = puFinal.toFixed(4); 
                     const totalFormatted = tot.toFixed(2);
-                    text += `  - [${lineName}] | Total Qty: ${qte} | UP: ${puAffiche} € | TOTAL: ${totalFormatted} €\n`;
+                    text += `  - ${lineName} | Total Qty: ${qte} | UP: ${puAffiche} € | TOTAL: ${totalFormatted} €\n`;
                 });
 
                 // Display block sub-total in detailed mode
-                text += `  Block Sub-Total: ${totalB.toFixed(2)} €\n\n`;
+                text += `Sub-Total: ${totalB.toFixed(2)} €\n\n`;
             }
         });
         

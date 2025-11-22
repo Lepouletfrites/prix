@@ -113,8 +113,8 @@ function ajouterBloc(initialEmpty = false, doRecalc = true) {
   bloc.setAttribute('data-bloc-id', id);
 
   // Enforce empty values if initialEmpty is true
-  const initialTitle = initialEmpty ? "" : "New Block";
-  const initialQty = initialEmpty ? "" : "1";
+  const initialTitle = "";
+  const initialQty = "";
   const placeholderTitle = "Block Name (e.g., A5 Flyers)";
   const placeholderQty = "Qty";
 
@@ -713,4 +713,5 @@ window.dupliquerBloc = dupliquerBloc;
 window.toggleAccordion = toggleAccordion;
 window.copierDevis = copierDevis;
 window.copierDevisDetaille = copierDevisDetaille;
+
 window.closeModal = closeModal;

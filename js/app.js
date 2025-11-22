@@ -629,7 +629,7 @@ function generateTextReport(detailed) {
             const puFormatted = puMoyen.toFixed(4).replace(/\.0000$/, '.00'); // Simplify .0000 to .00
             const totalFormatted = totalB.toFixed(2);
             
-            text += `${title} ${qtyFormatted} | pc x ${puFormatted}€ -> ${totalFormatted} €\n`;
+            text += `🟦 ${title} | ${qtyFormatted} pc x ${puFormatted}€ -> ${totalFormatted} €\n`;
         } 
         
         // --- Detailed Logic (detailed = true) ---
@@ -715,3 +715,4 @@ window.copierDevis = copierDevis;
 window.copierDevisDetaille = copierDevisDetaille;
 
 window.closeModal = closeModal;
+

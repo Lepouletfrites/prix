@@ -1,0 +1,418 @@
+/* ----------------------------------------------------------------- */
+/* GENERAL STYLES & RESET */
+/* ----------------------------------------------------------------- */
+:root {
+  /* Colors updated to blue/white tones (Societal Colors) */
+  --primary-color: #004a8f; /* Deep Corporate Blue for buttons/borders */
+  --secondary-color: #f0f7ff; /* Very light background (near white, slight blue tint) */
+  --accent-color: #007bff; /* Bright Blue for general total and accents */
+  --text-color: #333;
+  --bg-light: #ffffff;
+  --border-color: #e0e0e0;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+body {
+  font-family: 'Inter', Arial, sans-serif;
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+  margin: 0;
+  padding: 0;
+  padding-bottom: 120px; /* Space for fixed total bar */
+}
+
+#main-container {
+  max-width: 1000px;
+  margin: 20px auto;
+  padding: 0 15px;
+}
+
+/* ----------------------------------------------------------------- */
+/* FIXED HEADER */
+/* ----------------------------------------------------------------- */
+header {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--bg-light);
+    border-bottom: 3px solid var(--primary-color); /* Deep Blue border */
+    padding: 15px 15px;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 50;
+}
+header h1 {
+    margin: 0;
+    font-size: 20px;
+    color: var(--primary-color); /* Deep Blue title */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ----------------------------------------------------------------- */
+/* QUOTE BLOCKS (CARDS) */
+/* ----------------------------------------------------------------- */
+.bloc {
+  background: var(--bg-light);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 25px;
+  transition: all 0.3s ease;
+  overflow: hidden; 
+}
+
+.bloc-header {
+  background-color: #e3f2ff; /* Very light blue */
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  position: relative;
+}
+
+.bloc-title {
+  flex-grow: 1;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #cce0ff; /* Light blue border */
+  border-radius: 6px;
+  min-width: 150px;
+  background-color: var(--bg-light);
+  box-shadow: var(--shadow-sm);
+}
+
+.bloc-exemplaires {
+  width: 60px;
+  text-align: center;
+  padding: 10px;
+  border: 1px solid #cce0ff; /* Light blue border */
+  border-radius: 6px;
+  font-weight: bold;
+}
+ 
+.bloc-label {
+    font-size: 14px; 
+    font-weight: 500;
+    color: #555;
+}
+ 
+.bloc-actions {
+  display: flex;
+  gap: 5px;
+}
+
+/* Block Content */
+.bloc-content {
+  padding: 0 20px 20px 20px;
+  overflow-x: auto; 
+  max-height: 1000px;
+  transition: max-height 0.4s ease-out, padding 0.4s ease-out;
+}
+.bloc-content.hidden-content {
+  max-height: 0;
+  padding: 0 20px;
+  overflow: hidden;
+}
+ 
+/* ----------------------------------------------------------------- */
+/* TABLE (SERVICE LINES) */
+/* ----------------------------------------------------------------- */
+table {
+  width: 100%;
+  min-width: 650px; 
+  border-collapse: collapse;
+  margin-top: 15px;
+  box-shadow: var(--shadow-sm);
+  border-radius: 8px;
+}
+
+thead {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid var(--border-color);
+}
+
+th, td {
+  padding: 10px 8px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+ 
+th {
+    font-weight: 600;
+    font-size: 12px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+ 
+td {
+    font-size: 14px;
+    background-color: var(--bg-light);
+}
+
+/* Inputs in table */
+td input, td select {
+  width: 100%;
+  padding: 8px 5px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-sizing: border-box;
+  font-size: 13px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+td input:focus, td select:focus {
+  border-color: var(--primary-color); /* Deep Blue on focus */
+  box-shadow: 0 0 0 2px rgba(0, 74, 143, 0.2);
+  outline: none;
+}
+ 
+.pu-input {
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+}
+.pu-input[readonly] {
+    background-color: #f9f9f9;
+    color: #555;
+}
+.pu-input.custom {
+    color: var(--accent-color); /* Bright Blue for custom price */
+    border-color: var(--accent-color);
+}
+ 
+.total {
+    font-weight: bold;
+    text-align: right;
+    color: var(--primary-color); /* Deep Blue total per line */
+    font-size: 15px;
+}
+
+/* Block Footer */
+.bloc-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border-color);
+}
+
+.total-bloc-valeur {
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+/* ----------------------------------------------------------------- */
+/* BUTTONS */
+/* ----------------------------------------------------------------- */
+.btn-base {
+  border: none;
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: capitalize;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Primary Buttons (New Block, Copy Detailed) */
+.btn-action {
+  background: var(--primary-color); /* Deep Blue */
+  color: white;
+  box-shadow: 0 4px 6px rgba(0, 74, 143, 0.3);
+}
+.btn-action:hover {
+  background: #003a70;
+  box-shadow: 0 4px 8px rgba(0, 74, 143, 0.5);
+}
+
+/* Secondary Buttons (Line, Duplicate, Copy Summary) */
+.btn-line {
+  background: #eee;
+  color: var(--text-color);
+  border: 1px solid #ccc;
+}
+.btn-line:hover {
+  background: #ddd;
+}
+
+/* Delete buttons */
+.delete-btn {
+  background: #f0f7ff; /* Very light blue background */
+  color: var(--primary-color); /* Deep Blue text */
+  border: 1px solid var(--primary-color);
+}
+.delete-btn:hover {
+  background: #cce0ff;
+}
+ 
+.toggle-accordion {
+    border: none; 
+    background: none; 
+    cursor: pointer; 
+    font-size: 16px;
+    color: var(--primary-color); /* Deep Blue icon */
+    padding: 5px;
+    margin-right: 5px;
+}
+.toggle-accordion:hover {
+    color: #003a70;
+}
+
+/* ----------------------------------------------------------------- */
+/* FIXED TOTAL BAR (FOOTER) */
+/* ----------------------------------------------------------------- */
+.fixed-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-light);
+  border-top: 4px solid var(--accent-color); /* Bright Blue separator */
+  padding: 15px 20px;
+  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: right;
+}
+
+.total-display {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.total-general-label {
+  font-size: 16px;
+  color: #666;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+#total-general {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--accent-color); /* Bright Blue grand total */
+}
+
+.copy-buttons {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    max-width: 400px;
+}
+.copy-buttons button {
+    flex-grow: 1;
+    font-weight: 600;
+}
+
+/* ----------------------------------------------------------------- */
+/* MODAL AND TOAST */
+/* ----------------------------------------------------------------- */
+#modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s;
+}
+#modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+#modal-box {
+    background: var(--bg-light);
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: var(--shadow-md);
+    max-width: 380px;
+    width: 90%;
+    transform: translateY(-20px);
+    transition: transform 0.3s;
+}
+#modal-overlay.show #modal-box {
+    transform: translateY(0);
+}
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+ 
+.toast {
+  visibility: hidden;
+  min-width: 250px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 12px;
+  position: fixed;
+  z-index: 101;
+  left: 50%;
+  bottom: 140px; 
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s, bottom 0.3s;
+  box-shadow: var(--shadow-md);
+}
+.toast.show {
+  visibility: visible;
+  opacity: 1;
+  bottom: 110px; 
+}
+ 
+/* ----------------------------------------------------------------- */
+/* SIMPLE ICONS */
+/* ----------------------------------------------------------------- */
+.icon-plus:before { content: "➕"; margin-right: 5px; }
+.icon-trash:before { content: "🗑"; }
+.icon-copy:before { content: "📋"; }
+.icon-check:before { content: "✔"; }
+.icon-x:before { content: "✖"; }
+.icon-reset:before { content: "♻"; margin-right: 5px; }
+.icon-chevron-down:before { content: "▼"; }
+.icon-chevron-right:before { content: "►"; }
+ 
+/* ----------------------------------------------------------------- */
+/* EMPTY STATE */
+/* ----------------------------------------------------------------- */
+#empty-state {
+    text-align: center; 
+    padding: 50px 20px; 
+    color: #999;
+    background: var(--bg-light);
+    border-radius: 12px;
+    margin-top: 40px;
+    box-shadow: var(--shadow-sm);
+}
+#empty-state p { margin: 5px 0 15px; }
+#empty-state h3 { 
+    font-size: 22px; 
+    color: #555;
+}

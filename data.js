@@ -241,7 +241,7 @@ window.services = {
     'Pre Folds': [{ max: Infinity, prix: 0.15, mint: 6.5 }],
     'Cut': [{ max: Infinity, prix: 0.0025, mint: 3.5 }],
     'Perfo': [{ max: Infinity, prix: 0.0025, mint: 3.5 }],
-    'Imposing': [{ max: Infinity, prix: 5 , }],
+    'Imposing': [{ max: Infinity, prix: 5 ,fixed_price: true }],
     'Staple': [{ max: Infinity, prix: 0.5 }]
   },
 

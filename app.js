@@ -130,6 +130,7 @@ function ajouterBloc(initialEmpty = false, doRecalc = true) {
         <input type="number" value="${initialQty}" min="0" placeholder="${placeholderQty}" class="bloc-exemplaires" oninput="majExemplairesLignes(this)">
         
         <div class="bloc-actions">
+            <button onclick="saveBlocAsPrefab(this.closest('.bloc'))" title="Save as Prefab" class="btn-base btn-line">💾 Save</button>
             <button onclick="dupliquerBloc(this.closest('.bloc'))" title="Duplicate block" class="btn-base btn-line icon-copy">Duplicate</button>
             <button onclick="askDeleteBloc(this.closest('.bloc'))" title="Delete block" class="btn-base delete-btn icon-trash"></button>
         </div>
@@ -737,6 +738,154 @@ function showToast(msg) {
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2500);
 }
+// =================================================================
+// PREFAB SYSTEM (TEMPLATES)
+// =================================================================
+
+/**
+ * Sauvegarde un bloc spécifique comme "Prefab" dans le LocalStorage
+ */
+function saveBlocAsPrefab(bloc) {
+    const title = bloc.querySelector('.bloc-title').value || "Untitled Prefab";
+    
+    // 1. Récupérer les données du bloc
+    const lines = [];
+    bloc.querySelectorAll('tbody tr').forEach(tr => {
+        lines.push({
+            c: tr.querySelector('.service-category').value,
+            t: tr.querySelector('.service-type').value,
+            f: tr.querySelector('.service-format').value,
+            o: tr.querySelector('.ligne-originaux').value,
+            e: tr.querySelector('.ligne-exemplaire').value,
+            p: tr.querySelector('.pu-input').value
+        });
+    });
+
+    const prefabData = {
+        title: title,
+        qty: bloc.querySelector('.bloc-exemplaires').value,
+        lines: lines
+    };
+
+    // 2. Sauvegarder dans 'devisPrefabs'
+    try {
+        const existing = localStorage.getItem('devisPrefabs');
+        const prefabs = existing ? JSON.parse(existing) : [];
+        prefabs.push(prefabData);
+        localStorage.setItem('devisPrefabs', JSON.stringify(prefabs));
+        showToast(`Prefab "${title}" saved!`);
+    } catch(e) {
+        console.error(e);
+        showToast("Error saving prefab", 'red');
+    }
+}
+
+/**
+ * Ouvre la modale des Prefabs et génère la liste
+ */
+function openPrefabModal() {
+    const overlay = document.getElementById('prefab-overlay');
+    const container = document.getElementById('prefab-list');
+    overlay.classList.add('show');
+    
+    const existing = localStorage.getItem('devisPrefabs');
+    const prefabs = existing ? JSON.parse(existing) : [];
+
+    container.innerHTML = '';
+
+    if(prefabs.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:#999; padding: 20px;">No prefabs saved yet.<br>Click "Save" on a block to create one.</p>';
+        return;
+    }
+
+    // Générer la liste
+    prefabs.forEach((p, index) => {
+        const item = document.createElement('div');
+        item.className = 'prefab-item';
+        item.innerHTML = `
+            <div class="prefab-info">
+                <strong>${p.title}</strong>
+                <small>${p.lines.length} lines | Default Qty: ${p.qty || 1}</small>
+            </div>
+            <div class="prefab-actions">
+                <button onclick="loadPrefab(${index})" class="btn-base btn-action">Load</button>
+                <button onclick="deletePrefab(${index})" class="btn-base delete-btn icon-trash"></button>
+            </div>
+        `;
+        container.appendChild(item);
+    });
+}
+
+function closePrefabModal() {
+    document.getElementById('prefab-overlay').classList.remove('show');
+}
+
+/**
+ * Supprime un prefab de la liste
+ */
+function deletePrefab(index) {
+    if(!confirm("Delete this prefab?")) return;
+    
+    const prefabs = JSON.parse(localStorage.getItem('devisPrefabs'));
+    prefabs.splice(index, 1);
+    localStorage.setItem('devisPrefabs', JSON.stringify(prefabs));
+    openPrefabModal(); // Rafraîchir la liste
+}
+
+/**
+ * Charge un prefab et crée un nouveau bloc
+ */
+function loadPrefab(index) {
+    const prefabs = JSON.parse(localStorage.getItem('devisPrefabs'));
+    const p = prefabs[index];
+    
+    if(!p) return;
+
+    // 1. Créer un bloc vide
+    ajouterBloc(false, false); 
+    const bloc = document.getElementById('blocs').lastElementChild;
+
+    // 2. Remplir les infos du header
+    bloc.querySelector('.bloc-title').value = p.title;
+    bloc.querySelector('.bloc-exemplaires').value = p.qty;
+
+    // 3. Vider la ligne par défaut créée par ajouterBloc
+    const tbody = bloc.querySelector('tbody');
+    tbody.innerHTML = '';
+
+    // 4. Recréer les lignes avec la logique de cascade (Category -> Type -> Format)
+    p.lines.forEach(l => {
+        ajouterLigne(bloc.querySelector('button[onclick^="ajouterLigne"]'));
+        const tr = tbody.lastElementChild;
+
+        // Set Category & Trigger Change
+        tr.querySelector('.service-category').value = l.c;
+        majTypeOptions(tr.querySelector('.service-category')); // Important: remplit le select Type
+
+        // Set Type & Trigger Change
+        tr.querySelector('.service-type').value = l.t;
+        majFormatOptions(tr.querySelector('.service-type')); // Important: remplit le select Format
+
+        // Set Format & Values
+        tr.querySelector('.service-format').value = l.f;
+        tr.querySelector('.ligne-originaux').value = l.o;
+        tr.querySelector('.ligne-exemplaire').value = l.e;
+        tr.querySelector('.pu-input').value = l.p;
+    });
+
+    closePrefabModal();
+    recalculer();
+    checkEmptyState();
+    bloc.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    showToast("Prefab loaded!");
+}
+
+// Exposer les fonctions globalement
+window.saveBlocAsPrefab = saveBlocAsPrefab;
+window.openPrefabModal = openPrefabModal;
+window.closePrefabModal = closePrefabModal;
+window.deletePrefab = deletePrefab;
+window.loadPrefab = loadPrefab;
 
 // Make functions globally accessible for inline HTML calls
 window.askResetApp = askResetApp;

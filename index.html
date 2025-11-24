@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quote Generator</title>
-    
+    <title>Quote Generator - Blue Style</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,23 +11,21 @@
     <header>
         <h1>Quote Generator</h1>
         <div class="header-actions">
+            <button onclick="openPrefabModal()" class="btn-base btn-line icon-star">Prefabs</button>
             <button onclick="askResetApp()" class="btn-base btn-line icon-reset">Reset All</button>
             <button onclick="ajouterBloc()" class="btn-base btn-action icon-plus">New Block</button>
         </div>
     </header>
 
     <main id="main-container">
-        
-        <div id="blocs">
-            </div>
+        <div id="blocs"></div>
 
         <div id="empty-state" style="display:none;">
             <p style="font-size: 30px;">🖨️</p>
             <h3>Your quote is empty</h3>
-            <p>Click on "New Block" above or below to start.</p>
+            <p>Click on "New Block" or load a Prefab to start.</p>
             <button onclick="ajouterBloc()" class="btn-base btn-action" style="margin-top: 15px;">Create Block</button>
         </div>
-
     </main>
 
     <div class="fixed-footer">
@@ -36,7 +33,6 @@
             <span class="total-general-label">Grand Total (Incl. VAT)</span>
             <div id="total-general">0.00 €</div>
         </div>
-
         <div class="copy-buttons">
             <button onclick="copierDevis()" class="btn-base btn-line icon-copy">Copy Summary</button>
             <button onclick="copierDevisDetaille()" class="btn-base btn-action icon-copy">Copy Details</button>
@@ -45,11 +41,23 @@
 
     <div id="modal-overlay">
         <div id="modal-box">
-            <h3 style="font-size: 18px; color: var(--text-color); margin-bottom: 10px;" id="modal-title">Confirmation</h3>
-            <p style="color: #666; margin-bottom: 20px;" id="modal-message">Are you sure?</p>
+            <h3 id="modal-title">Confirmation</h3>
+            <p id="modal-message">Are you sure?</p>
             <div class="modal-actions">
-                <button onclick="closeModal()" class="btn-base btn-line cancel-btn">Cancel</button>
+                <button onclick="closeModal()" class="btn-base btn-line">Cancel</button>
                 <button id="modal-confirm-btn" class="btn-base confirm-btn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="prefab-overlay">
+        <div id="prefab-box">
+            <div class="prefab-header">
+                <h3>Saved Prefabs</h3>
+                <button onclick="closePrefabModal()" class="close-modal-x">×</button>
+            </div>
+            <div id="prefab-list" class="prefab-list-container">
+                <p style="text-align:center; color:#999;">No prefabs saved yet.</p>
             </div>
         </div>
     </div>
@@ -62,5 +70,4 @@
     <script src="data.js"></script>
     <script src="app.js"></script>
 </body>
-
 </html>

@@ -416,3 +416,88 @@ td input:focus, td select:focus {
     font-size: 22px; 
     color: #555;
 }
+
+/* ================================================================= */
+/* PREFAB MODAL STYLES */
+/* ================================================================= */
+.icon-star:before { content: "★"; margin-right: 5px; }
+
+#prefab-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s;
+}
+#prefab-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+#prefab-box {
+    background: var(--bg-light);
+    width: 90%;
+    max-width: 500px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh; /* Limite la hauteur */
+}
+
+.prefab-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #e3f2ff; /* Bleu clair */
+    border-radius: 12px 12px 0 0;
+}
+.prefab-header h3 { margin: 0; color: var(--primary-color); }
+
+.close-modal-x {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+}
+
+.prefab-list-container {
+    padding: 20px;
+    overflow-y: auto; /* Scroll si la liste est longue */
+}
+
+.prefab-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    transition: box-shadow 0.2s;
+}
+.prefab-item:hover {
+    box-shadow: var(--shadow-sm);
+    border-color: var(--primary-color);
+}
+
+.prefab-info {
+    display: flex;
+    flex-direction: column;
+}
+.prefab-info strong { font-size: 16px; color: var(--text-color); }
+.prefab-info small { color: #888; margin-top: 4px; }
+
+.prefab-actions {
+    display: flex;
+    gap: 8px;
+}

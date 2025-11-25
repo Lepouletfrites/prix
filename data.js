@@ -380,7 +380,7 @@ window.services = {
   // 6. binding: Structure à 3 niveaux (Type/Matériau -> Format/Size)
   // =================================================================
   'Binding': {
-    'Smale': {
+    'Small': {
         'Simple': [
             { min: 1, prix: 1.25},
             { min: 20, prix: 1.15},

@@ -668,7 +668,7 @@ function generateTextReport(detailed) {
             const puFormatted = puMoyen.toFixed(4).replace(/\.0000$/, '.00'); // Simplify .0000 to .00
             const totalFormatted = totalB.toFixed(2);
             
-            text += `🟦 ${title} | ${qtyFormatted} pc x ${puFormatted}€ -> ${totalFormatted} €\n`;
+            text += `-> ${title} | ${qtyFormatted} pc x ${puFormatted}€ -> ${totalFormatted} €\n`;
         } 
         
         // --- Detailed Logic (detailed = true) ---
@@ -713,7 +713,7 @@ function generateTextReport(detailed) {
     
     // Display grand total (in both modes)
     text += `\n================================\n`;
-    text += `GRAND TOTAL: ${totalG.toFixed(2)} € Incl. VAT`;
+    text += `TOTAL: ${totalG.toFixed(2)} € Incl. VAT`;
     
     // Copy the generated text to clipboard using a temporary textarea
     const el = document.createElement('textarea');

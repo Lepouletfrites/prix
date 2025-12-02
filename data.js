@@ -232,10 +232,10 @@ window.services = {
   // 3. FINISHING: Structure à 2 niveaux
   // =================================================================
   'Finishing': {
-    'Booklet A4': [{ max: Infinity, prix: 0.02, mint: 6.5 }],
-    'Booklet A3': [{ max: Infinity, prix: 0.03, mint: 6.5 }],
-    'Booklet + cut A4': [{ max: Infinity, prix: 0.025, mint: 6.5 }],
-    'Booklet + cut A3': [{ max: Infinity, prix: 0.035, mint: 6.5 }],
+    'Booklet A4': [{ max: Infinity, prix: 0.025, mint: 6.5 }],
+    'Booklet A3': [{ max: Infinity, prix: 0.04, mint: 6.5 }],
+    'Booklet + cut A4': [{ max: Infinity, prix: 0.035, mint: 6.5 }],
+    'Booklet + cut A3': [{ max: Infinity, prix: 0.05, mint: 6.5 }],
     'Folding 2 & 3 A4': [{ max: Infinity, prix: 0.0125, mint: 6.5 }],
     'Folding 2 & 3 A3': [{ max: Infinity, prix: 0.025, mint: 6.5 }],
     'Pre Folds': [{ max: Infinity, prix: 0.15, mint: 6.5 }],

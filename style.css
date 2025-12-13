@@ -246,6 +246,10 @@ td input:focus, td select:focus {
   background: #ddd;
 }
 
+.btn-excel{
+  background: #048d39;
+  color: white;
+}
 /* Delete buttons */
 .delete-btn {
   background: #f0f7ff; /* Very light blue background */

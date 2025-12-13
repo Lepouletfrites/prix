@@ -644,8 +644,8 @@ function generateTextReport(detailed) {
                 
                 // Ligne de détail
                 // Ex: ▫️ Impression Couleur A4 (1000) : 0.050€/u -> 50.00€
-                text += `   ▫️ ${lineName} (Qté: ${qte}) `;
-                text += `       P.U.: ${puFinal.toFixed(4)} €  >>>  ${tot.toFixed(2)} €\n`;
+                text += `   ▫️ ${lineName} (Qté: ${qte})`;
+                text += ` x ${puFinal.toFixed(4)} € >>> ${tot.toFixed(2)} €\n`;
             });
 
             text += `   ----------------------------\n`;
@@ -818,6 +818,7 @@ window.toggleAccordion = toggleAccordion;
 window.copierDevis = copierDevis;
 window.copierDevisDetaille = copierDevisDetaille;
 window.closeModal = closeModal;
+
 
 
 

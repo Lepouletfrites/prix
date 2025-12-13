@@ -710,25 +710,25 @@ function copierPourExcel() {
                 
                 // Cas 1 : Formats Standards (A5 -> A4)
                 if (fmt === 'A5') {
-                    ex = ex / 2;
+                    ex = Math.ceil(ex / 2);
                     puFinal = puFinal * 2;
                     designation = designation.replace('A5', 'A4');
                 } 
                 else if (fmt === 'A6') {
-                    ex = ex / 4;
+                    ex = Math.ceil(ex / 4);
                     puFinal = puFinal * 4;
                     designation = designation.replace('A6', 'A4');
                 }
                 
                 // Cas 2 : Formats "Plus" (A5+ -> A4+)
                 else if (fmt === 'A5+') {
-                    ex = ex / 2;
+                    ex = Math.ceil(ex / 2);
                     puFinal = puFinal * 2;
                     // On remplace "A5+" par "A4+"
                     designation = designation.replace('A5+', 'A4+');
                 }
                 else if (fmt === 'A6+') {
-                    ex = ex / 4;
+                    ex = Math.ceil(ex / 4);
                     puFinal = puFinal * 4;
                     // On remplace "A6+" par "A4+"
                     designation = designation.replace('A6+', 'A4+');
@@ -909,6 +909,7 @@ window.copierDevis = copierDevis;
 window.copierDevisDetaille = copierDevisDetaille;
 window.closeModal = closeModal;
 window.copierPourExcel = copierPourExcel;
+
 
 
 

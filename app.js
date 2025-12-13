@@ -673,8 +673,9 @@ function generateTextReport(detailed) {
 }
 
 /**
- * Copie pour Excel avec CONVERSION AUTOMATIQUE A5/A6 -> A4
- * Pour les catégories "Print" et "Papier".
+ * Copie pour Excel avec CONVERSION INTELLIGENTE
+ * - Print/Papier A5/A6 -> A4
+ * - Papier A5+/A6+ -> A4+
  */
 function copierPourExcel() {
     let text = "";
@@ -688,7 +689,7 @@ function copierPourExcel() {
             const fmt = tr.querySelector('.service-format').value;
             
             // 1. Récupération des valeurs brutes
-            let orig = parseFloat(tr.querySelector('.ligne-originaux').value) || 0;
+            const orig = parseFloat(tr.querySelector('.ligne-originaux').value) || 0;
             let ex = parseFloat(tr.querySelector('.ligne-exemplaire').value) || 0;
             
             // Récupération du PU
@@ -703,36 +704,48 @@ function copierPourExcel() {
             const isFormatUsed = !tr.querySelector('.service-format').disabled;
             if(fmt && isFormatUsed) designation += ` ${fmt}`;
 
-            // --- LOGIQUE DE CONVERSION A5/A6 VERS A4 ---
-            // On cible uniquement les catégories qui contiennent "Print" ou "Papier"
-            if ( (cat.includes('Print') || cat.includes('Papier')) && ['A5', 'A6'].includes(fmt) ) {
+            // --- LOGIQUE DE CONVERSION ---
+            // On cible Print ou Papier
+            if (cat.includes('Print') || cat.includes('Paper')) {
                 
-                let diviseur = 1;
-                if (fmt === 'A5') diviseur = 2;
-                if (fmt === 'A6') diviseur = 4;
-
-                // A. On convertit la quantité (ex: 1000 A5 -> 500 A4)
-                ex = ex / diviseur;
-
-                // B. On convertit le prix unitaire (ex: Prix A5 * 2 = Prix A4)
-                // Cela permet de garder le même total financier à la fin
-                puFinal = puFinal * diviseur;
-
-                // C. On change le nom (ex: "Print Couleur A5" -> "Print Couleur A4")
-                designation = designation.replace(fmt, 'A4');
+                // Cas 1 : Formats Standards (A5 -> A4)
+                if (fmt === 'A5') {
+                    ex = ex / 2;
+                    puFinal = puFinal * 2;
+                    designation = designation.replace('A5', 'A4');
+                } 
+                else if (fmt === 'A6') {
+                    ex = ex / 4;
+                    puFinal = puFinal * 4;
+                    designation = designation.replace('A6', 'A4');
+                }
+                
+                // Cas 2 : Formats "Plus" (A5+ -> A4+)
+                else if (fmt === 'A5+') {
+                    ex = ex / 2;
+                    puFinal = puFinal * 2;
+                    // On remplace "A5+" par "A4+"
+                    designation = designation.replace('A5+', 'A4+');
+                }
+                else if (fmt === 'A6+') {
+                    ex = ex / 4;
+                    puFinal = puFinal * 4;
+                    // On remplace "A6+" par "A4+"
+                    designation = designation.replace('A6+', 'A4+');
+                }
             }
 
             // --- FORMATAGE EXCEL ---
             const col1_Orig = orig.toString().replace('.', ',');
             const col2_Nom = designation;
-            const col3_Ex = ex.toString().replace('.', ','); // Sera peut-être à virgule (ex: 125,5)
+            const col3_Ex = ex.toString().replace('.', ','); 
             const col4_PU = puFinal.toFixed(4).replace('.', ',');
 
             text += `${col1_Orig}\t${col2_Nom}\t${col3_Ex}\t${col4_PU}\n`;
         });
     });
 
-    // Copie dans le presse-papiers
+    // Copie presse-papiers
     const el = document.createElement('textarea');
     el.value = text;
     el.style.position = 'absolute';
@@ -743,7 +756,7 @@ function copierPourExcel() {
     document.body.removeChild(el);
     
     if (typeof animateCopy === 'function') {
-        showToast("Converti en A4 et copié !");
+        showToast("Conversions A4/A4+ effectuées !");
     } else {
         showToast("Copié pour Excel !");
     }
@@ -896,6 +909,7 @@ window.copierDevis = copierDevis;
 window.copierDevisDetaille = copierDevisDetaille;
 window.closeModal = closeModal;
 window.copierPourExcel = copierPourExcel;
+
 
 
 

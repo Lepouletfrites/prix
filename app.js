@@ -261,15 +261,32 @@ function majExemplairesLignes(input) {
 }
 
 /**
- * Fonction principale de calcul.
- * MODIFIÉE : Regroupe A4, A5, A6 pour le calcul des paliers (équivalent A4).
+ * Utilitaire pour récupérer le coefficient de division selon le format
+ * A4 = 1 (Référence)
+ * A5 = 2 (2 A5 dans un A4) -> On divisera le prix par 2
+ * A6 = 4 (4 A6 dans un A4) -> On divisera le prix par 4
+ */
+function getCoefFormat(fmt) {
+    if (fmt === 'A5') return 2;
+    if (fmt === 'A6') return 4;
+    return 1;
+}
+
+/**
+ * Fonction principale de calcul REVISÉE
+ * Corrige le problème de synchronisation entre A4 et A5
  */
 function recalculer() {
     let totalGeneral = 0;
-    const lignesParService = {}; // Clé -> Quantité cumulée (en équivalent A4 pour l'impression)
-    const dataLignes = [];
+    
+    // Cette map stockera le volume TOTAL converti en A4 pour chaque couple Categorie|Type
+    // Ex: "Print|Couleur" -> 1500 (équivalent A4)
+    const volumesParService = {}; 
+    
+    // Tableau temporaire pour stocker les infos de chaque ligne afin d'éviter de relire le DOM deux fois
+    const cacheLignes = [];
 
-    // 1. COLLECTE DES QUANTITÉS
+    // --- ÉTAPE 1 : CALCULER LES VOLUMES GLOBAUX ---
     document.querySelectorAll('.bloc').forEach(bloc => {
         bloc.querySelectorAll('tbody tr').forEach(tr => {
             const cat = tr.querySelector('.service-category').value;
@@ -278,133 +295,121 @@ function recalculer() {
             
             if(!cat || !type) return;
 
+            // Récupération des inputs
             const origInput = tr.querySelector('.ligne-originaux');
             const exInput = tr.querySelector('.ligne-exemplaire');
             const orig = parseFloat(origInput.value) || 0;
             let ex = parseFloat(exInput.value) || 0;
 
-            // Vérification Prix Fixe (Fixed Price)
-            let paliersCheck = null;
+            // Vérification Prix Fixe
+            let isFixed = false;
             try {
                 const root = window.services[cat][type];
-                paliersCheck = Array.isArray(root) ? root : root[fmt];
-            } catch(e) { /* Sélection incomplète */ }
+                // On regarde si la structure est un tableau direct ou par format
+                const targetData = Array.isArray(root) ? root : (root[fmt] || root['A4']); 
+                if (targetData && targetData[0] && targetData[0].fixed_price) {
+                    isFixed = true;
+                }
+            } catch(e) {}
 
-            const isFixed = paliersCheck && paliersCheck[0] && paliersCheck[0].fixed_price;
-
+            // Application règles Inputs
             if (isFixed) {
-                // Règle Prix Fixe
                 ex = 1;
-                origInput.value = 1;
-                exInput.value = 1;
-                origInput.disabled = true;
-                exInput.disabled = true;
+                origInput.value = 1; exInput.value = 1;
+                origInput.disabled = true; exInput.disabled = true;
             } else {
-                // Règles standards
-                origInput.disabled = false;
-                exInput.disabled = false;
-                
-                // Arrondi de production (toujours utile pour savoir combien imprimer réellement)
+                origInput.disabled = false; exInput.disabled = false;
+                // Arrondi de production
                 if(['Print'].includes(cat)) {
-                    if(fmt === 'A5') {
-                        ex = Math.ceil(ex / 2) * 2;
-                    } else if(fmt === 'A6') {
-                        ex = Math.ceil(ex / 4) * 4;
-                    }
+                    if(fmt === 'A5') ex = Math.ceil(ex / 2) * 2;
+                    else if(fmt === 'A6') ex = Math.ceil(ex / 4) * 4;
                 }
             }
             
             const qteReelle = orig * ex; 
             
-            // --- LOGIQUE DE REGROUPEMENT (A4/A5/A6) ---
-            let key = `${cat}|${type}`; // Base de la clé
-            let qtePourPalier = qteReelle;
-            let isStandardFormat = false;
+            // DÉTERMINATION DE LA CLÉ DE REGROUPEMENT
+            // Si c'est A4, A5, A6 -> On regroupe sous la clé "A4"
+            let groupKey = `${cat}|${type}`;
+            let volumeEquivalent = qteReelle;
 
-            // On vérifie si c'est un format standard convertible en A4
-            // (Note: on suppose que 'Print' est le nom de catégorie pour l'impression)
             if (['A4', 'A5', 'A6'].includes(fmt)) {
-                isStandardFormat = true;
-                // La clé de regroupement devient "...|A4" pour tout le monde
-                key += `|A4`;
-                
-                // Conversion en équivalent A4 pour le palier
-                if (fmt === 'A5') qtePourPalier = qteReelle / 2;
-                else if (fmt === 'A6') qtePourPalier = qteReelle / 4;
-                // A4 reste qteReelle
+                groupKey += `|A4`; // On force la clé à A4 pour qu'ils partagent le même compteur
+                volumeEquivalent = qteReelle / getCoefFormat(fmt); // On convertit la qté en équivalent A4
             } else {
-                // Pour A3 ou autres formats non standards
+                // Pour A3 ou autres, on garde leur format propre
                 const isFormatUsed = !tr.querySelector('.service-format').disabled;
-                if(fmt && isFormatUsed) key += `|${fmt}`;
+                if(fmt && isFormatUsed) groupKey += `|${fmt}`;
             }
 
-            // Accumuler la quantité pour le calcul du palier
-            if(!lignesParService[key]) lignesParService[key] = 0;
-            lignesParService[key] += qtePourPalier;
+            // On ajoute au compteur global
+            if(!volumesParService[groupKey]) volumesParService[groupKey] = 0;
+            volumesParService[groupKey] += volumeEquivalent;
             
-            dataLignes.push({ tr, key, qte: qteReelle, cat, type, fmt, isFixed, isStandardFormat });
+            // On stocke les infos pour l'étape 2
+            cacheLignes.push({ tr, groupKey, qteReelle, cat, type, fmt, isFixed });
         });
     });
 
-    // 2. APPLICATION DES PRIX
+    // --- ÉTAPE 2 : APPLIQUER LES PRIX ---
     document.querySelectorAll('.bloc').forEach(bloc => {
         let totalBloc = 0;
         const qtyExemplaires = parseFloat(bloc.querySelector('.bloc-exemplaires').value) || 0;
 
         bloc.querySelectorAll('tbody tr').forEach(tr => {
-            const data = dataLignes.find(d => d.tr === tr);
-            const puInput = tr.querySelector('.pu-input');
+            // On retrouve les infos calculées à l'étape 1
+            const data = cacheLignes.find(d => d.tr === tr);
             const totalCell = tr.querySelector('.total');
+            const puInput = tr.querySelector('.pu-input');
 
             if(!data) {
                 totalCell.textContent = '0.00';
                 return;
             }
 
+            // Récupération de la grille tarifaire
             let paliers = null;
             try {
                 const root = window.services[data.cat][data.type];
-                
-                // Si c'est un format standard (A5/A6), on va chercher la grille du A4
-                if (data.isStandardFormat) {
-                    paliers = root['A4'];
+                // Si on est sur un format standard (A5/A6), on va CHERCHER la grille du A4
+                if (['A4', 'A5', 'A6'].includes(data.fmt)) {
+                    paliers = root['A4']; 
                 } else {
                     paliers = Array.isArray(root) ? root : root[data.fmt];
                 }
-            } catch(e) { /* Incomplète */ }
+            } catch(e) { /* Grille introuvable */ }
 
             let puBase = 0;
             let minTotal = 0;
             
             if(paliers) {
-               if (data.isFixed) {
+                if (data.isFixed) {
                    puBase = paliers[0].prix || 0;
                    minTotal = paliers[0].mint || 0;
-               } else {
-                   // On utilise la quantité CUMULÉE (convertie en A4) pour trouver le palier
-                   const totalQtePalier = lignesParService[data.key] || 0;
-                   const palierTrouve = [...paliers].reverse().find(p => (p.min||0) <= totalQtePalier) || paliers[0];
+                } else {
+                   // C'est ICI que la magie opère :
+                   // On utilise le volume TOTAL CUMULÉ (A4+A5+A6 convertis) pour trouver le palier
+                   const totalVolumeGroupe = volumesParService[data.groupKey] || 0;
                    
-                   // Prix trouvé = Prix d'une feuille A4
-                   const prixA4 = palierTrouve ? (palierTrouve.prix || 0) : 0;
+                   // On trouve le prix unitaire pour du A4 correspondant à ce volume
+                   const palierTrouve = [...paliers].reverse().find(p => (p.min||0) <= totalVolumeGroupe) || paliers[0];
+                   
+                   const prixRef = palierTrouve ? (palierTrouve.prix || 0) : 0;
                    minTotal = palierTrouve ? (palierTrouve.mint || 0) : 0;
 
-                   // Division du prix si format plus petit
-                   if (data.fmt === 'A5') {
-                       puBase = prixA4 / 2;
-                   } else if (data.fmt === 'A6') {
-                       puBase = prixA4 / 4;
-                   } else {
-                       puBase = prixA4;
-                   }
-               }
+                   // On divise le prix si c'est du A5 ou A6
+                   puBase = prixRef / getCoefFormat(data.fmt);
+                }
             }
 
+            // Mise à jour de l'affichage
             puInput.placeholder = puBase.toFixed(4);
             
             const puManuel = parseFloat(puInput.value);
-            const puFinal = isNaN(puManuel) || puManuel === 0 ? puBase : puManuel;
+            // Si l'utilisateur a entré 0 ou rien, on prend le prix calculé
+            const puFinal = (isNaN(puManuel) || puManuel === 0) ? puBase : puManuel;
 
+            // Style visuel si prix manuel
             if(!isNaN(puManuel) && puManuel !== puBase && puManuel > 0) {
                  puInput.classList.add('custom');
             } else {
@@ -412,16 +417,16 @@ function recalculer() {
                 if(puManuel === 0) puInput.value = ''; 
             }
 
-            let tot = data.qte * puFinal;
+            let tot = data.qteReelle * puFinal;
             
-            // Gestion du minimum de facturation
-            // Note : Le minTotal s'applique souvent au "Lot". Ici on l'applique à la ligne si nécessaire.
-            if(minTotal > 0 && data.qte > 0 && tot < minTotal) tot = minTotal; 
+            // Minimum de facturation (si applicable à la ligne)
+            if(minTotal > 0 && data.qteReelle > 0 && tot < minTotal) tot = minTotal; 
 
             totalCell.textContent = tot.toFixed(2);
             totalBloc += tot;
         });
         
+        // Totaux du bloc
         const totalElement = bloc.querySelector('.total-bloc-valeur');
         totalElement.textContent = totalBloc.toFixed(2);
         bloc.dataset.total = totalBloc.toFixed(2);
@@ -433,7 +438,6 @@ function recalculer() {
     document.getElementById('total-general').textContent = totalGeneral.toFixed(2) + ' €';
     saveData();
 }
-
 // --- SAUVEGARDE & CHARGEMENT ---
 
 function saveData() {
@@ -789,3 +793,4 @@ window.toggleAccordion = toggleAccordion;
 window.copierDevis = copierDevis;
 window.copierDevisDetaille = copierDevisDetaille;
 window.closeModal = closeModal;
+

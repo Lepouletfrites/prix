@@ -673,8 +673,8 @@ function generateTextReport(detailed) {
 }
 
 /**
- * Copie les lignes au format compatible Excel (TSV).
- * Format demandé : Nb Originaux | Nom | Nb Exemplaires | PU
+ * Copie pour Excel avec CONVERSION AUTOMATIQUE A5/A6 -> A4
+ * Pour les catégories "Print" et "Papier".
  */
 function copierPourExcel() {
     let text = "";
@@ -687,36 +687,47 @@ function copierPourExcel() {
             const type = tr.querySelector('.service-type').value;
             const fmt = tr.querySelector('.service-format').value;
             
-            // Récupération des valeurs
-            const orig = parseFloat(tr.querySelector('.ligne-originaux').value) || 0;
-            const ex = parseFloat(tr.querySelector('.ligne-exemplaire').value) || 0;
+            // 1. Récupération des valeurs brutes
+            let orig = parseFloat(tr.querySelector('.ligne-originaux').value) || 0;
+            let ex = parseFloat(tr.querySelector('.ligne-exemplaire').value) || 0;
             
-            // On ne calcule plus le total pour la 1ère colonne, on prend juste l'original
-            // const qteTotale = orig * ex; <--- Ancienne ligne supprimée
-
             // Récupération du PU
             const puInput = tr.querySelector('.pu-input');
             const puBase = parseFloat(puInput.placeholder) || 0; 
             const puManuel = parseFloat(puInput.value);
-            const puFinal = isNaN(puManuel) || puManuel === 0 ? puBase : puManuel;
+            let puFinal = isNaN(puManuel) || puManuel === 0 ? puBase : puManuel;
 
-            // Construction du Nom
+            // Construction du Nom de base
             let designation = cat;
             if(type) designation += ` ${type}`;
             const isFormatUsed = !tr.querySelector('.service-format').disabled;
             if(fmt && isFormatUsed) designation += ` ${fmt}`;
 
-            // FORMATAGE EXCEL (Séparateur = \t)
-            // Col 1 : Nb Originaux
+            // --- LOGIQUE DE CONVERSION A5/A6 VERS A4 ---
+            // On cible uniquement les catégories qui contiennent "Print" ou "Papier"
+            if ( (cat.includes('Print') || cat.includes('Papier')) && ['A5', 'A6'].includes(fmt) ) {
+                
+                let diviseur = 1;
+                if (fmt === 'A5') diviseur = 2;
+                if (fmt === 'A6') diviseur = 4;
+
+                // A. On convertit la quantité (ex: 1000 A5 -> 500 A4)
+                ex = ex / diviseur;
+
+                // B. On convertit le prix unitaire (ex: Prix A5 * 2 = Prix A4)
+                // Cela permet de garder le même total financier à la fin
+                puFinal = puFinal * diviseur;
+
+                // C. On change le nom (ex: "Print Couleur A5" -> "Print Couleur A4")
+                designation = designation.replace(fmt, 'A4');
+            }
+
+            // --- FORMATAGE EXCEL ---
             const col1_Orig = orig.toString().replace('.', ',');
-            // Col 2 : Nom
             const col2_Nom = designation;
-            // Col 3 : Nb Exemplaires
-            const col3_Ex = ex.toString().replace('.', ',');
-            // Col 4 : Prix Unitaire
+            const col3_Ex = ex.toString().replace('.', ','); // Sera peut-être à virgule (ex: 125,5)
             const col4_PU = puFinal.toFixed(4).replace('.', ',');
 
-            // Assemblage de la ligne
             text += `${col1_Orig}\t${col2_Nom}\t${col3_Ex}\t${col4_PU}\n`;
         });
     });
@@ -732,9 +743,7 @@ function copierPourExcel() {
     document.body.removeChild(el);
     
     if (typeof animateCopy === 'function') {
-        // L'animation ne peut pas être déclenchée ici sans l'élément bouton, 
-        // mais le toast confirmera l'action.
-        showToast("Format Excel copié !");
+        showToast("Converti en A4 et copié !");
     } else {
         showToast("Copié pour Excel !");
     }
@@ -887,6 +896,7 @@ window.copierDevis = copierDevis;
 window.copierDevisDetaille = copierDevisDetaille;
 window.closeModal = closeModal;
 window.copierPourExcel = copierPourExcel;
+
 
 
 

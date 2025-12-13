@@ -673,15 +673,13 @@ function generateTextReport(detailed) {
 }
 
 /**
- * Copie les lignes au format compatible Excel (TSV - Tab Separated Values).
- * Format demandé : Quantité | Nom | Exemplaires | PU
- * Remplace les points par des virgules pour Excel FR.
+ * Copie les lignes au format compatible Excel (TSV).
+ * Format demandé : Nb Originaux | Nom | Nb Exemplaires | PU
  */
 function copierPourExcel() {
     let text = "";
 
     document.querySelectorAll('.bloc').forEach(bloc => {
-        // On parcourt uniquement les lignes du tableau (on ignore le titre du bloc)
         bloc.querySelectorAll('tbody tr').forEach(tr => {
             const cat = tr.querySelector('.service-category').value;
             if(!cat) return;
@@ -689,10 +687,12 @@ function copierPourExcel() {
             const type = tr.querySelector('.service-type').value;
             const fmt = tr.querySelector('.service-format').value;
             
-            // Récupération des valeurs brutes
+            // Récupération des valeurs
             const orig = parseFloat(tr.querySelector('.ligne-originaux').value) || 0;
             const ex = parseFloat(tr.querySelector('.ligne-exemplaire').value) || 0;
-            const qteTotale = orig * ex; // La colonne "Quantité" (Total)
+            
+            // On ne calcule plus le total pour la 1ère colonne, on prend juste l'original
+            // const qteTotale = orig * ex; <--- Ancienne ligne supprimée
 
             // Récupération du PU
             const puInput = tr.querySelector('.pu-input');
@@ -706,15 +706,18 @@ function copierPourExcel() {
             const isFormatUsed = !tr.querySelector('.service-format').disabled;
             if(fmt && isFormatUsed) designation += ` ${fmt}`;
 
-            // FORMATAGE EXCEL (Séparateur = \t pour Tabulation)
-            // On remplace les points par des virgules pour la compatibilité Excel Français
-            const col1_Qte = qteTotale.toString().replace('.', ',');
+            // FORMATAGE EXCEL (Séparateur = \t)
+            // Col 1 : Nb Originaux
+            const col1_Orig = orig.toString().replace('.', ',');
+            // Col 2 : Nom
             const col2_Nom = designation;
+            // Col 3 : Nb Exemplaires
             const col3_Ex = ex.toString().replace('.', ',');
+            // Col 4 : Prix Unitaire
             const col4_PU = puFinal.toFixed(4).replace('.', ',');
 
-            // Ajout de la ligne au texte global
-            text += `${col1_Qte}\t${col2_Nom}\t${col3_Ex}\t${col4_PU}\n`;
+            // Assemblage de la ligne
+            text += `${col1_Orig}\t${col2_Nom}\t${col3_Ex}\t${col4_PU}\n`;
         });
     });
 
@@ -728,10 +731,9 @@ function copierPourExcel() {
     document.execCommand('copy'); 
     document.body.removeChild(el);
     
-    // Animation visuelle si tu as ajouté ma fonction précédente, sinon un simple toast
     if (typeof animateCopy === 'function') {
-        // On ne peut pas passer 'this' ici facilement si appelé depuis HTML sans le passer en paramètre
-        // Mais on affichera au moins le toast
+        // L'animation ne peut pas être déclenchée ici sans l'élément bouton, 
+        // mais le toast confirmera l'action.
         showToast("Format Excel copié !");
     } else {
         showToast("Copié pour Excel !");
@@ -885,6 +887,7 @@ window.copierDevis = copierDevis;
 window.copierDevisDetaille = copierDevisDetaille;
 window.closeModal = closeModal;
 window.copierPourExcel = copierPourExcel;
+
 
 
 

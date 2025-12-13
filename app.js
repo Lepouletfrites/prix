@@ -673,9 +673,9 @@ function generateTextReport(detailed) {
 }
 
 /**
- * Copie pour Excel avec CONVERSION INTELLIGENTE
- * - Print/Papier A5/A6 -> A4
- * - Papier A5+/A6+ -> A4+
+ * Copie pour Excel avec :
+ * 1. GESTION DU MINIMUM DE FACTURATION (Prioritaire)
+ * 2. Conversion A5/A6 -> A4 (Si au-dessus du minimum)
  */
 function copierPourExcel() {
     let text = "";
@@ -689,7 +689,7 @@ function copierPourExcel() {
             const fmt = tr.querySelector('.service-format').value;
             
             // 1. Récupération des valeurs brutes
-            const orig = parseFloat(tr.querySelector('.ligne-originaux').value) || 0;
+            let orig = parseFloat(tr.querySelector('.ligne-originaux').value) || 0;
             let ex = parseFloat(tr.querySelector('.ligne-exemplaire').value) || 0;
             
             // Récupération du PU
@@ -704,38 +704,76 @@ function copierPourExcel() {
             const isFormatUsed = !tr.querySelector('.service-format').disabled;
             if(fmt && isFormatUsed) designation += ` ${fmt}`;
 
-            // --- LOGIQUE DE CONVERSION ---
-            // On cible Print ou Papier
-            if (cat.includes('Print') || cat.includes('Paper')) {
-                
-                // Cas 1 : Formats Standards (A5 -> A4)
-                if (fmt === 'A5') {
-                    ex = Math.ceil(ex / 2);
-                    puFinal = puFinal * 2;
-                    designation = designation.replace('A5', 'A4');
-                } 
-                else if (fmt === 'A6') {
-                    ex = Math.ceil(ex / 4);
-                    puFinal = puFinal * 4;
-                    designation = designation.replace('A6', 'A4');
+            // --- ETAPE 1 : RECUPÉRATION DU MINIMUM (MINT) ---
+            let mint = 0;
+            try {
+                if (window.services[cat] && window.services[cat][type]) {
+                    let root = window.services[cat][type];
+                    let targetData = null;
+
+                    // Détection si structure à 2 niveaux (Tableau direct) ou 3 niveaux (Objet par format)
+                    if (Array.isArray(root)) {
+                        targetData = root; // Ex: Finishing
+                    } else if (fmt && root[fmt]) {
+                        targetData = root[fmt]; // Ex: Print, Paper
+                    }
+
+                    // Si on a trouvé la grille de prix, on cherche le palier correspondant à la quantité
+                    // pour trouver le 'mint' (car le mint peut changer selon la quantité, ex: CDV)
+                    if (targetData) {
+                        const qteTotale = orig * ex;
+                        // On cherche le bon palier (comme dans recalculer)
+                        const palier = [...targetData].reverse().find(p => (p.min || 0) <= qteTotale) || targetData[0];
+                        if (palier && palier.mint) {
+                            mint = palier.mint;
+                        }
+                    }
                 }
-                
-                // Cas 2 : Formats "Plus" (A5+ -> A4+)
-                else if (fmt === 'A5+') {
-                    ex = Math.ceil(ex / 2);
-                    puFinal = puFinal * 2;
-                    // On remplace "A5+" par "A4+"
-                    designation = designation.replace('A5+', 'A4+');
-                }
-                else if (fmt === 'A6+') {
-                    ex = Math.ceil(ex / 4);
-                    puFinal = puFinal * 4;
-                    // On remplace "A6+" par "A4+"
-                    designation = designation.replace('A6+', 'A4+');
+            } catch(e) {
+                console.error("Erreur recherche mint", e);
+            }
+
+            const totalTheorique = orig * ex * puFinal;
+
+            // --- ETAPE 2 : LOGIQUE DE DÉCISION ---
+            
+            // CAS A : ON EST SOUS LE MINIMUM DE FACTURATION
+            if (mint > 0 && totalTheorique < mint) {
+                // On remplace tout par une ligne unique "Forfait Minimum"
+                orig = 1;
+                ex = 1;
+                puFinal = mint; // Le prix devient le minimum (ex: 3.5)
+                // Note : On ne convertit pas le nom (pas de A5->A4) car c'est un forfait fixe
+            } 
+            
+            // CAS B : ON EST AU DESSUS (Logique standard + Conversions)
+            else {
+                // Conversion Print/Papier A5/A6 -> A4/A4+
+                if (cat.includes('Print') || cat.includes('Paper')) {
+                    if (fmt === 'A5') {
+                        ex = Math.ceil(ex / 2);
+                        puFinal = puFinal * 2;
+                        designation = designation.replace('A5', 'A4');
+                    } 
+                    else if (fmt === 'A6') {
+                        ex = Math.ceil(ex / 4);
+                        puFinal = puFinal * 4;
+                        designation = designation.replace('A6', 'A4');
+                    }
+                    else if (fmt === 'A5+') {
+                        ex = Math.ceil(ex / 2);
+                        puFinal = puFinal * 2;
+                        designation = designation.replace('A5+', 'A4+');
+                    }
+                    else if (fmt === 'A6+') {
+                        ex = Math.ceil(ex / 4);
+                        puFinal = puFinal * 4;
+                        designation = designation.replace('A6+', 'A4+');
+                    }
                 }
             }
 
-            // --- FORMATAGE EXCEL ---
+            // --- ETAPE 3 : FORMATAGE EXCEL ---
             const col1_Orig = orig.toString().replace('.', ',');
             const col2_Nom = designation;
             const col3_Ex = ex.toString().replace('.', ','); 
@@ -756,7 +794,7 @@ function copierPourExcel() {
     document.body.removeChild(el);
     
     if (typeof animateCopy === 'function') {
-        showToast("Conversions A4/A4+ effectuées !");
+        showToast("Minima appliqués & Copié !");
     } else {
         showToast("Copié pour Excel !");
     }
@@ -909,6 +947,7 @@ window.copierDevis = copierDevis;
 window.copierDevisDetaille = copierDevisDetaille;
 window.closeModal = closeModal;
 window.copierPourExcel = copierPourExcel;
+
 
 
 

@@ -575,29 +575,46 @@ function copierDevisDetaille() {
     generateTextReport(true);
 }
 
+/**
+ * Génère le rapport texte (Résumé ou Détaillé) pour le client.
+ * VERSION AMÉLIORÉE : Visuel plus propre et professionnel pour Email/WhatsApp.
+ */
 function generateTextReport(detailed) {
-    let text = ""; 
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('fr-FR');
+    
+    // En-tête du devis
+    let text = `📄 DEVIS\n`;
+    text += `📅 Date : ${dateStr}\n`;
+    text += `================================\n\n`;
+
     let totalG = 0;
 
     document.querySelectorAll('.bloc').forEach((b, i) => {
-        const title = b.querySelector('.bloc-title').value || `Bloc ${i+1}`;
+        // Récupération des données
+        const title = b.querySelector('.bloc-title').value || `Lot n°${i+1}`;
         const totalB = parseFloat(b.dataset.total) || 0;
         const qtyExemplaires = parseFloat(b.dataset.qty) || 0;
 
         totalG += totalB;
         
+        // --- MODE RÉSUMÉ (Simple et efficace) ---
         if (!detailed) {
+            // Calcul du PU moyen pour l'affichage global
             const puMoyen = qtyExemplaires > 0 ? totalB / qtyExemplaires : 0;
-            const qtyFormatted = qtyExemplaires.toFixed(0);
-            const puFormatted = puMoyen.toFixed(4).replace(/\.0000$/, '.00'); 
-            const totalFormatted = totalB.toFixed(2);
             
-            text += `-> ${title} | ${qtyFormatted} ex x ${puFormatted}€ -> ${totalFormatted} €\n`;
+            // Formatage propre
+            // Ex: ▪️ Flyers A5 : 1000 ex. × 0.050€ = 50.00 €
+            text += `▪️ ${title}\n`;
+            text += `   ${qtyExemplaires} ex. × ${puMoyen.toFixed(4)} € = ${totalB.toFixed(2)} €\n`;
+            text += `--------------------------------\n`;
         } 
+        
+        // --- MODE DÉTAILLÉ (Complet pour validation technique) ---
         else {
-            text += `\n- - - - - - - - - - - - - - -\n`;
-            text += `${title}\n`;
-            text += `Total exemplaires : ${qtyExemplaires}\n`;
+            text += `📦 ${title.toUpperCase()}\n`;
+            text += `   Quantité globale : ${qtyExemplaires} exemplaires\n`;
+            text += `   Détail des services :\n`;
 
             b.querySelectorAll('tbody tr').forEach((tr) => {
                 const cat = tr.querySelector('.service-category').value;
@@ -606,10 +623,12 @@ function generateTextReport(detailed) {
                 const type = tr.querySelector('.service-type').value;
                 const fmt = tr.querySelector('.service-format').value;
                 
+                // Calculs de ligne
                 const orig = parseFloat(tr.querySelector('.ligne-originaux').value)||0;
                 const ex = parseFloat(tr.querySelector('.ligne-exemplaire').value)||0;
                 const qte = orig * ex; 
 
+                // Prix
                 const puInput = tr.querySelector('.pu-input');
                 const puBase = parseFloat(puInput.placeholder) || 0; 
                 const puManuel = parseFloat(puInput.value);
@@ -618,23 +637,30 @@ function generateTextReport(detailed) {
                 const totalCell = tr.querySelector('.total');
                 const tot = parseFloat(totalCell ? totalCell.textContent : 0) || 0;
                 
+                // Construction du nom de la ligne
                 let lineName = cat;
                 if(type) lineName += ` ${type}`;
                 const isFormatUsed = !tr.querySelector('.service-format').disabled;
                 if(fmt && isFormatUsed) lineName += ` ${fmt}`;
                 
-                const puAffiche = puFinal.toFixed(4); 
-                const totalFormatted = tot.toFixed(2);
-                text += `  - ${lineName} | Qté Totale: ${qte} | PU: ${puAffiche} € | TOTAL: ${totalFormatted} €\n`;
+                // Ligne de détail
+                // Ex: ▫️ Impression Couleur A4 (1000) : 0.050€/u -> 50.00€
+                text += `   ▫️ ${lineName} (Qté: ${qte})\n`;
+                text += `       P.U.: ${puFinal.toFixed(4)} €  >>>  ${tot.toFixed(2)} €\n`;
             });
 
-            text += `Sous-Total : ${totalB.toFixed(2)} €\n`;
+            text += `   ----------------------------\n`;
+            text += `   👉 SOUS-TOTAL LOT : ${totalB.toFixed(2)} €\n\n`;
         }
     });
     
-    text += `\n================================\n`;
-    text += `TOTAL : ${totalG.toFixed(2)} € TTC`;
+    // Pied de page global
+    if (!detailed) text += `\n`; // Petit saut de ligne si résumé
+    text += `================================\n`;
+    text += `💰 TOTAL TVAC : ${totalG.toFixed(2)} €\n`;
+    text += `================================\n`;
     
+    // Copie dans le presse-papiers
     const el = document.createElement('textarea');
     el.value = text;
     el.style.position = 'absolute';
@@ -644,7 +670,7 @@ function generateTextReport(detailed) {
     document.execCommand('copy'); 
     document.body.removeChild(el);
     
-    showToast("Copié dans le presse-papiers !");
+    showToast("Devis copié pour le client !");
 }
 
 function showToast(msg) {
@@ -793,4 +819,5 @@ window.toggleAccordion = toggleAccordion;
 window.copierDevis = copierDevis;
 window.copierDevisDetaille = copierDevisDetaille;
 window.closeModal = closeModal;
+
 

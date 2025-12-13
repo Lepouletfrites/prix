@@ -586,7 +586,7 @@ function generateTextReport(detailed) {
     // En-tête du devis
     let text = `📄 DEVIS\n`;
     text += `📅 Date : ${dateStr}\n`;
-    text += `================================\n\n`;
+    text += `================================\n`;
 
     let totalG = 0;
 
@@ -614,7 +614,6 @@ function generateTextReport(detailed) {
         else {
             text += `📦 ${title.toUpperCase()}\n`;
             text += `   Quantité globale : ${qtyExemplaires} exemplaires\n`;
-            text += `   Détail des services :\n`;
 
             b.querySelectorAll('tbody tr').forEach((tr) => {
                 const cat = tr.querySelector('.service-category').value;
@@ -645,17 +644,17 @@ function generateTextReport(detailed) {
                 
                 // Ligne de détail
                 // Ex: ▫️ Impression Couleur A4 (1000) : 0.050€/u -> 50.00€
-                text += `   ▫️ ${lineName} (Qté: ${qte})\n`;
+                text += `   ▫️ ${lineName} (Qté: ${qte}) `;
                 text += `       P.U.: ${puFinal.toFixed(4)} €  >>>  ${tot.toFixed(2)} €\n`;
             });
 
             text += `   ----------------------------\n`;
-            text += `   👉 SOUS-TOTAL LOT : ${totalB.toFixed(2)} €\n\n`;
+            text += `   👉 SOUS-TOTAL : ${totalB.toFixed(2)} €\n\n`;
         }
     });
     
     // Pied de page global
-    if (!detailed) text += `\n`; // Petit saut de ligne si résumé
+    //if (!detailed) text += `\n`; // Petit saut de ligne si résumé
     text += `================================\n`;
     text += `💰 TOTAL TVAC : ${totalG.toFixed(2)} €\n`;
     text += `================================\n`;
@@ -819,5 +818,6 @@ window.toggleAccordion = toggleAccordion;
 window.copierDevis = copierDevis;
 window.copierDevisDetaille = copierDevisDetaille;
 window.closeModal = closeModal;
+
 
 

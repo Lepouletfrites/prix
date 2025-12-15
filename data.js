@@ -169,11 +169,11 @@ window.services = {
     },
     // Groupe "Standard" pour les actions simples
     'Basic': {
-        'Pre Folds': [{ max: Infinity, prix: 0.15, mint: 6.5 }],
-        'Cut': [{ max: Infinity, prix: 0.0025, mint: 3.5 }],
-        'Perfo': [{ max: Infinity, prix: 0.0025, mint: 3.5 }],
-        'Staple': [{ max: Infinity, prix: 0.05 }],
-        'Imposing': [{ max: Infinity, prix: 5, fixed_price: true }]
+        'Pre Folds': [{ max: Infinity, prix: 0.15, mint: 6.5 , change:"Pre Folds" }],
+        'Cut': [{ max: Infinity, prix: 0.0025, mint: 3.5 , change:"Cut" }],
+        'Perfo': [{ max: Infinity, prix: 0.0025, mint: 3.5 , change:"Perfo" }],
+        'Staple': [{ max: Infinity, prix: 0.05 , change:"Staple" }],
+        'Imposing': [{ max: Infinity, prix: 5, fixed_price: true , change:"Imposing" }]
     }
   },
 
@@ -181,13 +181,13 @@ window.services = {
   // 4. LAMINATION
   // =================================================================
   'Lamination': {
-    'Encapsulation': {
-        'A5': [{ min: 1, prix: 1}, { min: 10, prix: 0.85}, { min: 25, prix: 0.75}],
-        'A4': [{ min: 1, prix: 1.25}, { min: 10, prix: 1}, { min: 25, prix: 0.85}],
-        'A3': [{ min: 1, prix: 2.5}, { min: 10, prix: 2}, { min: 25, prix: 1.7}],
-        'A2': [{ min: 1, prix: 5}, { min: 10, prix: 4.5}, { min: 25, prix: 4}],
-        'A1': [{ min: 1, prix: 9.5}, { min: 10, prix: 8.5}, { min: 25, prix: 7.5}],
-        'A0': [{ min: 1, prix: 18.5}, { min: 10, prix: 16.5}, { min: 25, prix: 14.5}]
+    ' ': {
+        'A5': [{ min: 1, prix: 1, change:"Lamination A5" }, { min: 10, prix: 0.85}, { min: 25, prix: 0.75}],
+        'A4': [{ min: 1, prix: 1.25, change:"Lamination A4"}, { min: 10, prix: 1}, { min: 25, prix: 0.85}],
+        'A3': [{ min: 1, prix: 2.5, change:"Lamination A3"}, { min: 10, prix: 2}, { min: 25, prix: 1.7}],
+        'A2': [{ min: 1, prix: 5, change:"Lamination A2"}, { min: 10, prix: 4.5}, { min: 25, prix: 4}],
+        'A1': [{ min: 1, prix: 9.5, change:"Lamination A1"}, { min: 10, prix: 8.5}, { min: 25, prix: 7.5}],
+        'A0': [{ min: 1, prix: 18.5, change:"Lamination A0"}, { min: 10, prix: 16.5}, { min: 25, prix: 14.5}]
     }
   },
 
@@ -206,7 +206,7 @@ window.services = {
         'A0': [{ min: 1, prix: 19.2}, { min: 10, prix: 15.2}, { min: 25, prix: 12.8}, { min: 50, prix: 11}]
     },
     'Option': {
-        'Fold': [{prix: 0.6 }]
+        'Fold': [{prix: 0.6 , change:"Fold" }]
     }
   },
 
@@ -250,7 +250,7 @@ window.services = {
   'Special':{
     'Card': {
         'CDV': [
-            { min: 1, prix: 0.14, mint: 14},
+            { min: 1, prix: 0.14, mint: 14, change:"CDV" },
             { min: 101, prix: 0.135, mint: 27},
             { min: 201, prix: 0.12, mint: 36},
             { min: 301, prix: 0.1125, mint: 45},

@@ -207,7 +207,7 @@ function ajouterLigne(blocOrBtn, catVal, typeVal, fmtVal) {
   let htmlCell = '';
 
   if (isCustom) {
-      // Cas Manuel : Un champ texte libre
+      // --- CAS 1 : MANUEL (Champ libre) ---
       const displayVal = (catVal === 'Custom') ? '' : catVal;
       htmlCell = `
         <td style="padding-left:10px;">
@@ -219,17 +219,37 @@ function ajouterLigne(blocOrBtn, catVal, typeVal, fmtVal) {
             <input type="hidden" class="service-format" value=" ">
         </td>`;
   } else {
-      // Cas Catalogue : Affichage propre + Inputs cachés
-      // On prépare un affichage joli : "Print Color" en gras, "A4" en normal
-      let displayFormat = (fmtVal === 'Standard' || fmtVal === 'Option') ? '' : fmtVal;
+      // --- CAS 2 : CATALOGUE ---
       
-      htmlCell = `
-        <td style="padding-left:10px; vertical-align:middle;">
+      // 1. On cherche si un NOM PERSONNALISÉ existe dans les données (propriété "change")
+      let customName = null;
+      try {
+          const dataArray = window.services[catVal][typeVal][fmtVal];
+          if (Array.isArray(dataArray)) {
+              const found = dataArray.find(item => item.change);
+              if (found) customName = found.change;
+          }
+      } catch (e) { /* Pas de custom name, on continue */ }
+
+      // 2. Construction de l'affichage
+      let contentHtml = '';
+
+      if (customName) {
+          // A. Si nom personnalisé : On affiche JUSTE le nom (comme demandé)
+          contentHtml = `<span style="font-weight:600; color:var(--text-color);">${customName}</span>`;
+      } else {
+          // B. Sinon : Affichage standard (Catégorie Type + Format en petit)
+          let displayFormat = (fmtVal === 'Standard' || fmtVal === 'Option') ? '' : fmtVal;
+          contentHtml = `
             <div style="display:flex; flex-direction:column; line-height:1.2;">
                 <span style="font-weight:600; color:var(--text-color);">${catVal} <span style="font-weight:400; opacity:0.8;">${typeVal}</span></span>
                 ${displayFormat ? `<span style="font-size:0.85em; color:var(--accent-color);">${displayFormat}</span>` : ''}
-            </div>
+            </div>`;
+      }
 
+      htmlCell = `
+        <td style="padding-left:10px; vertical-align:middle;">
+            ${contentHtml}
             <input type="hidden" class="service-category" value="${catVal}">
             <input type="hidden" class="service-type" value="${typeVal}">
             <input type="hidden" class="service-format" value="${fmtVal}">
@@ -251,6 +271,7 @@ function ajouterLigne(blocOrBtn, catVal, typeVal, fmtVal) {
   tbody.appendChild(tr);
   recalculer();
 }
+
 
 
 function majExemplairesLignes(input) {
@@ -899,15 +920,16 @@ function generateTextReport(detailed) {
             text += `\n📦 ${title.toUpperCase()} (${qty} ex)\n`;
             b.querySelectorAll('tbody tr').forEach((tr) => {
                const cat = tr.querySelector('.service-category').value;
-               if(!cat) return;
                const type = tr.querySelector('.service-type').value;
                const fmt = tr.querySelector('.service-format').value;
                const tot = tr.querySelector('.total').textContent;
                
-               let lbl = `${cat}`;
-               if(type && type !== ' ') lbl += ` ${type}`;
-               if(fmt && fmt !== ' ' && fmt !== 'Standard') lbl += ` ${fmt}`;
-               
+               if(!cat) return;
+
+               // --- MODIFICATION ICI : On fait juste confiance à la fonction ---
+               const lbl = getDisplayName(cat, type, fmt);
+               // ---------------------------------------------------------------
+
                text += `   ▫️ ${lbl} : ${tot} €\n`;
             });
             text += `   > Sous-total : ${totalB.toFixed(2)} €\n`;
@@ -917,6 +939,8 @@ function generateTextReport(detailed) {
     copierTexte(text);
     showToast("Devis copié !");
 }
+
+
 
 function copierPourExcel() {
     let text = "";
@@ -931,23 +955,25 @@ function copierPourExcel() {
             const type = tr.querySelector('.service-type').value;
             const fmt = tr.querySelector('.service-format').value;
             
-            let nom = `${cat} ${type}`;
-            if(fmt !== 'Standard' && fmt !== 'Option') nom += ` ${fmt}`;
+            // --- MODIFICATION ICI ---
+            let nom = getDisplayName(cat, type, fmt); 
+            // ------------------------
 
             let excelQte = res.qteReelle;
             let excelPU = res.puFinal;
 
-            // Gestion du minimum forfaitaire pour l'export
             if (res.mint > 0 && (res.qteReelle * res.puFinal) < res.mint) {
-                excelQte = 1; excelPU = res.mint; nom += " (Forfait Min)";
+                excelQte = 1; excelPU = res.mint; 
+                // Pour le forfait mini, on ajoute quand même l'info si ce n'est pas déjà dans le nom
+                if(!nom.toLowerCase().includes('forfait')) nom += " (Forfait Min)";
             } else {
                  if (cat === 'Print' || cat === 'Paper') {
+                    // La conversion A5/A6 reste active au cas où ton nom perso contient "A5"
                     if (fmt.includes('A5')) { excelQte /= 2; excelPU *= 2; nom = nom.replace('A5', 'A4'); }
                     else if (fmt.includes('A6')) { excelQte /= 4; excelPU *= 4; nom = nom.replace('A6', 'A4'); }
                  }
             }
             
-            // Formatage Excel (Tabulation + Virgule)
             const strQte = excelQte.toString().replace('.', ',');
             const strPU = excelPU.toFixed(4).replace('.', ',');
             text += `1\t${nom}\t${strQte}\t${strPU}\n`;
@@ -955,8 +981,45 @@ function copierPourExcel() {
     });
     
     copierTexte(text);
-    showToast("Copié pour Excel (avec conversions) !");
+    showToast("Copié pour Excel !");
 }
+
+
+// Fonction utilitaire intelligente pour le nommage
+// Fonction utilitaire intelligente pour le nommage
+// À placer dans la section UTILS ou EXPORTS de ton app.js
+function getDisplayName(cat, type, fmt) {
+    let customName = null;
+
+    // 1. Recherche du nom personnalisé dans TOUS les paliers
+    try {
+        const dataArray = window.services[cat][type][fmt];
+        if (Array.isArray(dataArray)) {
+            // On cherche le premier élément qui possède la propriété "change"
+            // Peu importe s'il est au début, au milieu ou à la fin du tableau
+            const found = dataArray.find(item => item.change);
+            if (found) {
+                return found.change; 
+            }
+        }
+    } catch (e) {
+        // Erreur d'accès ou donnée inexistante, on continue
+    }
+
+    // 2. Sinon, construction automatique
+    let fullName = `${cat}`;
+    if (type && type !== ' ' && type !== 'Standard') {
+        fullName += ` ${type}`;
+    }
+
+    // 3. Ajout du format par défaut (si pas de nom personnalisé trouvé)
+    if (fmt && fmt !== ' ' && fmt !== 'Standard' && fmt !== 'Option') {
+        fullName += ` ${fmt}`;
+    }
+    
+    return fullName;
+}
+
 
 /**
  * =================================================================

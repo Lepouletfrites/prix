@@ -232,15 +232,18 @@ window.services = {
   'Binding': {
     'Small': {
         'Simple': [{ min: 1, prix: 1.25}, { min: 20, prix: 1.15}, { min: 50, prix: 1}, { min: 100, prix: 0.9}],
-        'Plastic': [{ min: 1, prix: 1.85}, { min: 20, prix: 1.75}, { min: 50, prix: 1.6}, { min: 100, prix: 1.5}]
+        'Plastic A4': [{ min: 1, prix: 1.85}, { min: 20, prix: 1.75}, { min: 50, prix: 1.6}, { min: 100, prix: 1.5}],
+        'Plastic A3': [{ min: 1, prix: 2.45}, { min: 20, prix: 2.35}, { min: 50, prix: 2.2}, { min: 100, prix: 2.1}]
     },
     'Medium': {
         'Simple': [{ min: 1, prix: 2}, { min: 20, prix: 1.9}, { min: 50, prix: 1.8}, { min: 100, prix: 1.65}],
-        'Plastic': [{ min: 1, prix: 2.6}, { min: 20, prix: 2.5}, { min: 50, prix: 2.4}, { min: 100, prix: 2.25}]
+        'Plastic A4': [{ min: 1, prix: 2.6}, { min: 20, prix: 2.5}, { min: 50, prix: 2.4}, { min: 100, prix: 2.25}],
+        'Plastic A3': [{ min: 1, prix: 3.2}, { min: 20, prix: 3.1}, { min: 50, prix: 3}, { min: 100, prix: 2.85}]
     },
     'Large': {
         'Simple': [{ min: 1, prix: 2.5}, { min: 20, prix: 2.4}, { min: 50, prix: 2.25}, { min: 100, prix: 2.15}],
-        'Plastic': [{ min: 1, prix: 3.1}, { min: 20, prix: 3}, { min: 50, prix: 2.85}, { min: 100, prix: 2.75}]
+        'Plastic A4': [{ min: 1, prix: 3.1}, { min: 20, prix: 3}, { min: 50, prix: 2.85}, { min: 100, prix: 2.75}],
+        'Plastic A3': [{ min: 1, prix: 3.7}, { min: 20, prix: 3.6}, { min: 50, prix: 3.45}, { min: 100, prix: 3.35}]
     }
   },
 

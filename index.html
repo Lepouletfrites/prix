@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quote Generator - Blue Style</title>
+    <title>Quote Generator - Allps</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <header>
-        <h1>Quote Generator</h1>
+        <h1>Quote Generator Allps</h1>
         <div class="header-actions">
             <button onclick="openPrefabModal()" class="btn-base btn-line icon-star">Prefabs</button>
             <button onclick="askResetApp()" class="btn-base btn-line icon-reset">Reset All</button>
@@ -40,7 +40,7 @@
         </div>
     </div>
 
-    <div id="modal-overlay">
+    <div id="modal-overlay" class="overlay-common">
         <div id="modal-box">
             <h3 id="modal-title">Confirmation</h3>
             <p id="modal-message">Are you sure?</p>
@@ -51,7 +51,7 @@
         </div>
     </div>
 
-    <div id="prefab-overlay">
+    <div id="prefab-overlay" class="overlay-common">
         <div id="prefab-box">
             <div class="prefab-header">
                 <h3>Saved Prefabs</h3>
@@ -63,7 +63,7 @@
         </div>
     </div>
 
-    <div id="catalog-overlay">
+    <div id="catalog-overlay" class="overlay-common">
         <div id="catalog-box">
             <div class="catalog-header">
                 <h3>📚 Catalogue des Services</h3>

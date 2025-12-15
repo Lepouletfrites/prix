@@ -30,9 +30,16 @@ document.addEventListener('DOMContentLoaded', () => {
 // =================================================================
 
 function openCatalog(btn) {
+    // 1. On mémorise quel bloc a demandé l'ouverture (c'est instantané)
     currentBlocForCatalog = btn.closest('.bloc');
-    document.getElementById('catalog-overlay').classList.add('show');
+    
+    // 2. On attend un tout petit peu (10ms) pour laisser le navigateur finir de gérer le clic
+    // avant de lancer la lourde tâche d'afficher le gros catalogue.
+    setTimeout(() => {
+        document.getElementById('catalog-overlay').classList.add('show');
+    }, 10);
 }
+
 
 function closeCatalog() {
     document.getElementById('catalog-overlay').classList.remove('show');
@@ -117,12 +124,16 @@ function renderCatalog() {
 function selectServiceFromCatalog(cat, type, fmt) {
     if (!currentBlocForCatalog) return;
     
-    // Ajoute la ligne avec les infos sélectionnées
+    // 1. On fait le travail lourd (Ajout ligne + Calculs)
     ajouterLigne(currentBlocForCatalog, cat, type, fmt);
-    
-    closeCatalog();
-    showToast(`Ajouté : ${cat} ${type} ${fmt}`);
+
+    // 2. On attend une fraction de seconde avant de lancer l'animation de fermeture
+    // Cela évite le "jerk" visuel et rend l'interaction plus naturelle
+    setTimeout(() => {
+        closeCatalog();
+    }, 150); 
 }
+
 
 // =================================================================
 // GESTION DES BLOCS ET LIGNES

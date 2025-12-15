@@ -505,3 +505,123 @@ td input:focus, td select:focus {
     display: flex;
     gap: 8px;
 }
+
+
+/* --- CATALOGUE MODAL STYLES --- */
+#catalog-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.7); /* Fond plus sombre pour focus */
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Aligné en haut */
+    z-index: 300;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s;
+    overflow-y: auto; /* Permet de scroller si l'écran est petit */
+    padding: 40px 0;
+}
+#catalog-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+#catalog-box {
+    background: var(--bg-light);
+    width: 90%;
+    max-width: 900px; /* Largeur confortable */
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+}
+.catalog-header {
+    padding: 15px 25px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f0f7ff;
+    border-radius: 12px 12px 0 0;
+}
+/* Conteneur principal du catalogue */
+#catalog-content {
+    padding: 20px;
+    overflow-y: auto;
+    
+    /* --- NOUVEAU : MISE EN COLONNES --- */
+    column-count: 3;       /* Divise en 3 colonnes */
+    column-gap: 20px;      /* Espace entre les colonnes */
+}
+
+/* Chaque bloc de catégorie (Print, Paper, etc.) */
+.cat-section {
+    margin-bottom: 20px;
+    
+    /* --- ESTHÉTIQUE & STRUCTURE --- */
+    break-inside: avoid;   /* Empêche de couper un bloc en deux entre deux colonnes */
+    background-color: #fcfcfc; /* Fond très léger pour bien délimiter */
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;         /* Espace interne */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03); /* Légère ombre pour le relief */
+}
+
+/* Le titre de la catégorie */
+.cat-title {
+    font-size: 16px;
+    color: var(--primary-color);
+    border-bottom: 2px solid #e6f0fa;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* --- RESPONSIVE : ADAPTATION --- */
+/* Si l'écran est petit (Tablette), on passe à 2 colonnes */
+@media (max-width: 900px) {
+    #catalog-content {
+        column-count: 2;
+    }
+}
+
+/* Si l'écran est très petit (Mobile), on repasse à 1 colonne */
+@media (max-width: 600px) {
+    #catalog-content {
+        column-count: 1;
+    }
+}
+
+.type-group { margin-bottom: 15px; }
+.type-label { 
+    font-weight: 600; 
+    margin-bottom: 8px; 
+    display: block; 
+    color: #555;
+    font-size: 14px;
+}
+.format-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+}
+.btn-service {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 10px 5px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    font-size: 13px;
+}
+.btn-service:hover {
+    border-color: var(--accent-color);
+    background: #f0f8ff;
+    color: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}

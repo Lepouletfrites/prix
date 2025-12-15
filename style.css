@@ -778,3 +778,44 @@ body.dark-mode #save-box h3 { color: var(--text-main); }
 body.dark-mode .btn-line {
     border-color: var(--border-light);
 }
+
+/* ================================================================= */
+/* 12. CORRECTIF TABLEAU & LIGNES (CRITIQUE) */
+/* ================================================================= */
+
+/* Force le fond des cellules du tableau à devenir sombre */
+body.dark-mode tbody td {
+    background-color: var(--bg-surface) !important;
+    border-color: var(--border-light) !important;
+    color: var(--text-main) !important;
+}
+
+/* S'assure que les champs de saisie dans le tableau sont bien lisibles */
+body.dark-mode td input, 
+body.dark-mode td select {
+    background-color: var(--bg-input) !important;
+    color: var(--text-main) !important;
+    border: 1px solid transparent;
+}
+
+/* Au focus, on éclaire un peu pour voir où on écrit */
+body.dark-mode td input:focus, 
+body.dark-mode td select:focus {
+    background-color: #4b5563 !important; /* Gris un peu plus clair */
+    color: #fff !important;
+    border-color: var(--primary-color) !important;
+}
+
+/* Corrige la couleur du prix unitaire (qui était forcée en gris/bleu) */
+body.dark-mode .pu-input {
+    color: #cbd5e1 !important; /* Gris clair */
+}
+body.dark-mode .pu-input.custom {
+    color: #60a5fa !important; /* Bleu clair lumineux */
+    background-color: rgba(37, 99, 235, 0.2) !important;
+}
+
+/* Corrige la colonne Total qui doit rester bien blanche */
+body.dark-mode td.total {
+    color: #fff !important;
+}

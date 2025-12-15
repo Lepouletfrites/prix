@@ -39,37 +39,68 @@ function closeCatalog() {
     currentBlocForCatalog = null;
 }
 
+// Cherche la fonction renderCatalog() et remplace-la par ceci :
+// Remplace la fonction renderCatalog() dans app.js
 function renderCatalog() {
     const container = document.getElementById('catalog-content');
-    if (!container || container.innerHTML.trim() !== "") return; // Généré une seule fois
+    if (!container || container.innerHTML.trim() !== "") return; 
 
     let html = '';
+
+    // --- CONFIGURATION VISUELLE (Icônes & Couleurs) ---
+    const catalogStyles = {
+        'Print':      { icon: '🖨️', color: '#eef6fc', border: '#b6dbf5' }, // Bleu très clair
+        'Paper':      { icon: '📄', color: '#fff8e1', border: '#ffe082' }, // Jaune crème
+        'Finishing':  { icon: '✂️',  color: '#e8f5e9', border: '#a5d6a7' }, // Vert menthe
+        'Lamination': { icon: '🛡️',  color: '#f3e5f5', border: '#ce93d8' }, // Violet clair
+        'Plan':       { icon: '📐', color: '#e0f7fa', border: '#80deea' }, // Cyan
+        'Big size':   { icon: '🖼️', color: '#fff3e0', border: '#ffcc80' }, // Orange clair
+        'Binding':    { icon: '📒', color: '#fbe9e7', border: '#ffab91' }, // Rouge doux
+        'Special':    { icon: '✨',  color: '#f5f5f5', border: '#e0e0e0' }  // Gris
+    };
+
+    // --- 1. SECTION SPECIALE : DIVERS / MANUEL ---
+    html += `<div class="cat-section" style="background-color: #ffffff; border: 2px dashed var(--accent-color);">`;
+    html += `<div class="cat-title" style="color: var(--accent-color);">⚡ Divers / Manuel</div>`;
+    html += `<div class="type-group">`;
+    html += `<button class="btn-service" style="width:100%; font-weight:bold; padding:15px; background-color:var(--secondary-color);" onclick="selectServiceFromCatalog('Custom', '', '')">
+                ➕ Ajouter ligne vierge (Description libre)
+             </button>`;
+    html += `</div></div>`;
     
-    // Boucle sur les catégories (Print, Paper, etc.)
+    // --- 2. BOUCLE SUR LES SERVICES EXISTANTS ---
     for (const [catName, catData] of Object.entries(window.services)) {
-        html += `<div class="cat-section">`;
-        html += `<div class="cat-title">${catName}</div>`;
+        // Récupération du style ou valeur par défaut
+        const style = catalogStyles[catName] || { icon: '📦', color: '#ffffff', border: '#e0e0e0' };
+        
+        // Application du style (Fond + Bordure colorée)
+        html += `<div class="cat-section" style="background-color: ${style.color}; border: 1px solid ${style.border};">`;
+        
+        // Titre avec l'icône
+        html += `<div class="cat-title">
+                    <span style="font-size: 1.4em; margin-right: 8px; vertical-align: middle;">${style.icon}</span>
+                    <span style="vertical-align: middle;">${catName}</span>
+                 </div>`;
         
         // Boucle sur les Types (B/W, Color, etc.)
         for (const [typeName, typeData] of Object.entries(catData)) {
             html += `<div class="type-group">`;
             
-            // Si c'est un objet (donc contient des formats)
             if (typeof typeData === 'object' && !Array.isArray(typeData)) {
-                 html += `<span class="type-label">${typeName}</span>`;
+                 html += `<span class="type-label" style="opacity:0.8;">${typeName}</span>`;
                  html += `<div class="format-grid">`;
                  
                  for (const fmtName of Object.keys(typeData)) {
-                     // Préparation des arguments pour le clic (échappement des quotes)
                      const safeCat = catName.replace(/'/g, "\\'");
                      const safeType = typeName.replace(/'/g, "\\'");
                      const safeFmt = fmtName.replace(/'/g, "\\'");
                      
-                     // Nettoyage du label pour l'affichage
                      let label = fmtName;
                      if(label === 'Standard' || label === 'Option') label = typeName; 
 
-                     html += `<button class="btn-service" onclick="selectServiceFromCatalog('${safeCat}', '${safeType}', '${safeFmt}')">
+                     // Boutons avec fond blanc semi-transparent pour ressortir sur la couleur
+                     html += `<button class="btn-service" style="background: rgba(255,255,255,0.7); border-color: ${style.border};" 
+                                      onclick="selectServiceFromCatalog('${safeCat}', '${safeType}', '${safeFmt}')">
                                 ${label}
                               </button>`;
                  }
@@ -81,6 +112,7 @@ function renderCatalog() {
     }
     container.innerHTML = html;
 }
+
 
 function selectServiceFromCatalog(cat, type, fmt) {
     if (!currentBlocForCatalog) return;
@@ -145,35 +177,61 @@ function ajouterBloc(initialEmpty = false, doRecalc = true) {
   }
 }
 
-// Nouvelle version de ajouterLigne qui accepte les paramètres directs
+// Nouvelle version de ajouterLigne qui gère la fusion des colonnes pour le mode "Custom"
 function ajouterLigne(blocOrBtn, catVal, typeVal, fmtVal) {
-  // Récupération du bloc (soit passé direct, soit via le bouton si ancienne méthode)
+  // Récupération du bloc
   const bloc = blocOrBtn.classList.contains('bloc') ? blocOrBtn : blocOrBtn.closest('.bloc');
   const tbody = bloc.querySelector('tbody');
   const exBloc = parseFloat(bloc.querySelector('.bloc-exemplaires').value) || 1;
   const tr = document.createElement('tr');
 
-  // Création des selects en "disabled" pour garder la compatibilité avec le moteur de calcul
-  // mais sans permettre la modification manuelle (on passe par le catalogue)
+  // Détection : Est-ce une ligne catalogue ou une ligne personnalisée ?
+  // Si 'catVal' est 'Custom' OU n'existe pas dans nos services, c'est du manuel.
+  const isCustom = (catVal === 'Custom' || !window.services[catVal]);
+
+  let htmlCells = '';
+
+  if (isCustom) {
+      // --- MODE MANUEL : Fusion des 3 colonnes ---
+      // On affiche une seule grande zone de texte.
+      // On garde des inputs cachés pour "type" et "format" pour que le moteur de calcul (qui attend 3 valeurs) continue de fonctionner sans erreur.
+      
+      const displayVal = (catVal === 'Custom') ? '' : catVal; // Si c'est un nouveau, vide. Sinon (chargement), on met le texte.
+
+      htmlCells = `
+        <td colspan="3">
+            <input type="text" class="service-category" value="${displayVal}" placeholder="Description libre (ex: Forfait Création, Livraison...)" style="width:100%; font-weight:500; color:var(--primary-color);">
+            
+            <input type="hidden" class="service-type" value=" ">
+            <input type="hidden" class="service-format" value=" ">
+        </td>
+      `;
+  } else {
+      // --- MODE CATALOGUE : 3 colonnes distinctes (Inchangé) ---
+      htmlCells = `
+        <td>
+            <select class="service-category" disabled>
+                <option value="${catVal}">${catVal}</option>
+            </select>
+        </td>
+        <td>
+            <select class="service-type" disabled>
+                <option value="${typeVal}">${typeVal}</option>
+            </select>
+        </td>
+        <td>
+            <select class="service-format" disabled onchange="recalculer()">
+                <option value="${fmtVal}">${fmtVal === 'Standard' ? '-' : fmtVal}</option>
+            </select>
+        </td>
+      `;
+  }
+
   tr.innerHTML = `
-    <td>
-        <select class="service-category" disabled>
-            <option value="${catVal}">${catVal}</option>
-        </select>
-    </td>
-    <td>
-        <select class="service-type" disabled>
-            <option value="${typeVal}">${typeVal}</option>
-        </select>
-    </td>
-    <td>
-        <select class="service-format" disabled onchange="recalculer()">
-            <option value="${fmtVal}">${fmtVal === 'Standard' ? '-' : fmtVal}</option>
-        </select>
-    </td>
+    ${htmlCells}
     <td><input type="number" value="1" min="1" class="ligne-originaux" style="width:50px; text-align:center;" oninput="recalculer()"></td>
     <td><input type="number" value="${exBloc}" min="0" class="ligne-exemplaire" style="width:50px; text-align:center;" oninput="recalculer()"></td>
-    <td><input type="number" step="0.0001" placeholder="0.0000" class="pu-input" oninput="recalculer()"></td>
+    <td><input type="number" step="0.0001" placeholder="0.0000" class="pu-input custom" oninput="recalculer()"></td>
     <td class="total">0.00</td>
     <td><button onclick="this.closest('tr').remove(); recalculer()" style="color:var(--accent-color); border:none; background:none; cursor:pointer;"><span class="icon-x"></span></button></td>
   `;
@@ -181,6 +239,8 @@ function ajouterLigne(blocOrBtn, catVal, typeVal, fmtVal) {
   tbody.appendChild(tr);
   recalculer();
 }
+
+
 
 function askDeleteBloc(bloc) {
     openModal('Supprimer ?', 'Supprimer ce bloc ?', () => {

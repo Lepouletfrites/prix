@@ -10,10 +10,13 @@
 
     <header>
         <h1>Quote Generator Allps</h1>
-        <div class="header-actions">
+          <div class="header-actions">
+            <button onclick="saveProject()" class="btn-base btn-action icon-star">Sauvegarder</button>
+            <button onclick="openProjectsModal()" class="btn-base btn-line icon-copy">Mes Devis</button>
+            <span style="border-right: 1px solid #ddd; margin: 0 5px;"></span> 
             <button onclick="openPrefabModal()" class="btn-base btn-line icon-star">Prefabs</button>
-            <button onclick="askResetApp()" class="btn-base btn-line icon-reset">Reset All</button>
-            <button onclick="ajouterBloc()" class="btn-base btn-action icon-plus">New Block</button>
+            <button onclick="askResetApp()" class="btn-base btn-line icon-reset">Reset</button>
+            <button onclick="ajouterBloc()" class="btn-base btn-action icon-plus">Nouveau Bloc</button>
         </div>
     </header>
 
@@ -70,10 +73,21 @@
                 <button onclick="closeCatalog()" class="close-modal-x">×</button>
             </div>
             <div id="catalog-content">
-                </div>
+            </div>
         </div>
     </div>
 
+    <div id="projects-overlay">
+        <div id="projects-box">
+            <div class="projects-header">
+                <h3>📂 Mes Devis Sauvegardés</h3>
+                <button onclick="closeProjectsModal()" class="close-modal-x">×</button>
+            </div>
+            <div id="projects-list" class="projects-list-container">
+                <p style="text-align:center; color:#999;">Aucun devis sauvegardé.</p>
+            </div>
+        </div>
+    </div>
 
     <div id="toast" class="toast">
         <span class="icon-check"></span>

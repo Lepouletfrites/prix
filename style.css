@@ -529,3 +529,62 @@ td input:focus, td select:focus {
     opacity: 1; 
     transform: translateX(-50%) translateY(0); 
 }
+
+/* ================================================================= */
+/* 8. GESTION DES DOSSIERS (PROJECTS) */
+/* ================================================================= */
+#projects-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(31, 41, 55, 0.6); /* Un peu plus sombre */
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center; /* Centre horizontalement */
+    align-items: center;     /* Centre verticalement (C'est la clé !) */
+    z-index: 9999;           /* On s'assure qu'il est au-dessus de tout */
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+#projects-overlay.show { opacity: 1; visibility: visible; }
+
+
+#projects-box {
+    background: var(--bg-surface);
+    width: 90%;
+    max-width: 500px;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+    transform: scale(0.95);
+    transition: transform 0.3s;
+}
+#projects-overlay.show #projects-box { transform: scale(1); }
+
+.projects-header {
+    padding: 20px 25px;
+    border-bottom: 1px solid var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: var(--bg-input);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.projects-header h3 { margin: 0; font-size: 18px; color: var(--text-main); }
+
+.projects-list-container { padding: 20px; overflow-y: auto; }
+
+.project-item {
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--bg-surface); border: 1px solid var(--border-light);
+    padding: 15px; border-radius: var(--radius-md); margin-bottom: 10px;
+    transition: all 0.2s;
+}
+.project-item:hover { border-color: var(--primary-color); box-shadow: var(--shadow-sm); }
+
+.project-info strong { display: block; font-size: 16px; margin-bottom: 4px; color: var(--text-main); }
+.project-info small { color: var(--text-muted); font-size: 12px; }
+
+.project-actions { display: flex; gap: 8px; }

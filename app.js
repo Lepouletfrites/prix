@@ -727,6 +727,135 @@ function loadPrefab(index) {
     showToast("Prefab chargé !");
 }
 
+// =================================================================
+// GESTION DES DOSSIERS (SAVE / LOAD PROJECTS)
+// =================================================================
+
+// 1. Sauvegarder le projet actuel
+function saveProject() {
+    // On demande un nom à l'utilisateur
+    const name = prompt("Nom du devis (ex: Client Dupont - Brochure) :");
+    if (!name || name.trim() === "") return;
+
+    // On récupère les données actuelles (celles utilisées par le "localStorage" auto)
+    saveData(); // Assure que 'devisData' est à jour
+    const currentData = localStorage.getItem('devisData');
+    
+    if (!currentData || currentData === "[]") {
+        showToast("Rien à sauvegarder (Devis vide)");
+        return;
+    }
+
+    // On récupère la liste des projets existants
+    const projects = JSON.parse(localStorage.getItem('myProjects') || '{}');
+    
+    // On sauvegarde avec la date
+    projects[name] = {
+        date: new Date().toLocaleString(),
+        data: JSON.parse(currentData),
+        total: document.getElementById('total-general').textContent
+    };
+
+    localStorage.setItem('myProjects', JSON.stringify(projects));
+    showToast(`Devis "${name}" sauvegardé !`);
+}
+
+// 2. Ouvrir la modale
+function openProjectsModal() {
+    const overlay = document.getElementById('projects-overlay');
+    const container = document.getElementById('projects-list');
+    const projects = JSON.parse(localStorage.getItem('myProjects') || '{}');
+    
+    overlay.classList.add('show');
+    container.innerHTML = '';
+
+    const names = Object.keys(projects);
+    if (names.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding:20px;">Aucun devis sauvegardé.</p>';
+        return;
+    }
+
+    // On crée la liste (triée par nom pour l'instant)
+    names.forEach(name => {
+        const p = projects[name];
+        const item = document.createElement('div');
+        item.className = 'project-item';
+        item.innerHTML = `
+            <div class="project-info">
+                <strong>${name}</strong>
+                <small>📅 ${p.date} • 💰 ${p.total}</small>
+            </div>
+            <div class="project-actions">
+                <button onclick="loadProject('${name.replace(/'/g, "\\'")}')" class="btn-base btn-action">Ouvrir</button>
+                <button onclick="deleteProject('${name.replace(/'/g, "\\'")}')" class="btn-base delete-btn icon-trash"></button>
+            </div>
+        `;
+        container.appendChild(item);
+    });
+}
+
+function closeProjectsModal() {
+    document.getElementById('projects-overlay').classList.remove('show');
+}
+
+// 3. Charger un projet
+function loadProject(name) {
+    if (!confirm(`Ouvrir le devis "${name}" ? \n⚠️ Le devis actuel non sauvegardé sera perdu.`)) return;
+
+    const projects = JSON.parse(localStorage.getItem('myProjects') || '{}');
+    const project = projects[name];
+
+    if (project && project.data) {
+        // On injecte les données dans le système principal
+        localStorage.setItem('devisData', JSON.stringify(project.data));
+        loadFromJSON(JSON.stringify(project.data)); // Fonction existante qui reconstruit le devis
+        
+        closeProjectsModal();
+        showToast(`Devis "${name}" chargé !`);
+    } else {
+        showToast("Erreur de chargement.");
+    }
+}
+
+// 4. Supprimer un projet
+function deleteProject(name) {
+    if (!confirm(`Supprimer définitivement "${name}" ?`)) return;
+
+    const projects = JSON.parse(localStorage.getItem('myProjects') || '{}');
+    delete projects[name];
+    
+    localStorage.setItem('myProjects', JSON.stringify(projects));
+    openProjectsModal(); // Rafraîchir la liste
+    showToast("Devis supprimé.");
+}
+// =================================================================
+// UX : FERMETURE AU CLIC EN DEHORS (CLICK OUTSIDE)
+// =================================================================
+window.addEventListener('click', function(e) {
+    // Si on clique sur le fond gris du gestionnaire de projets
+    if (e.target.id === 'projects-overlay') {
+        closeProjectsModal();
+    }
+    
+    // Si on clique sur le fond gris des Prefabs
+    if (e.target.id === 'prefab-overlay') {
+        closePrefabModal();
+    }
+
+    // Si on clique sur le fond gris du Catalogue
+    if (e.target.id === 'catalog-overlay') {
+        closeCatalog(); 
+    }
+});
+
+// Exposer globalement (pour que le HTML les trouve)
+window.saveProject = saveProject;
+window.openProjectsModal = openProjectsModal;
+window.closeProjectsModal = closeProjectsModal;
+window.loadProject = loadProject;
+window.deleteProject = deleteProject;
+
+
 // Exposer globalement
 window.openPrefabModal = openPrefabModal;
 window.closePrefabModal = closePrefabModal; 

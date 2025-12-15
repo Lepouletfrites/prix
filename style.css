@@ -766,3 +766,15 @@ body.dark-mode .btn-service:hover {
 
 /* En mode sombre, on s'assure que le titre est de la bonne couleur */
 body.dark-mode #save-box h3 { color: var(--text-main); }
+
+/* Ajustement des boutons d'actions du bloc pour qu'ils soient alignés */
+.bloc-actions {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+/* S'assurer que les flèches sont lisibles en mode sombre */
+body.dark-mode .btn-line {
+    border-color: var(--border-light);
+}

@@ -146,15 +146,20 @@ function ajouterBloc(initialEmpty = false, doRecalc = true) {
   const id = 'bloc-' + blocId++;
   bloc.setAttribute('data-bloc-id', id);
 
+  // Note les nouveaux boutons "Monter/Descendre" dans bloc-actions 👇
   bloc.innerHTML = `
     <div class="bloc-header">
         <button class="toggle-accordion" onclick="toggleAccordion(this)"><span class="icon-chevron-down"></span></button>
         <input type="text" placeholder="Nom du bloc (ex: Flyers A5)" class="bloc-title" oninput="recalculer()">
         <label class="bloc-label">Exemplaires :</label>
         <input type="number" value="" min="0" placeholder="Qté" class="bloc-exemplaires" oninput="majExemplairesLignes(this)">
+        
         <div class="bloc-actions">
-            <button onclick="saveBlocAsPrefab(this.closest('.bloc'))" class="btn-base btn-line">💾 Save</button>
-            <button onclick="dupliquerBloc(this.closest('.bloc'))" class="btn-base btn-line icon-copy">Dupliquer</button>
+            <button onclick="moveBloc(this, -1)" class="btn-base btn-line" style="padding:5px 10px;" title="Monter">⬆</button>
+            <button onclick="moveBloc(this, 1)" class="btn-base btn-line" style="padding:5px 10px;" title="Descendre">⬇</button>
+            
+            <button onclick="saveBlocAsPrefab(this.closest('.bloc'))" class="btn-base btn-line">💾</button>
+            <button onclick="dupliquerBloc(this.closest('.bloc'))" class="btn-base btn-line icon-copy"></button>
             <button onclick="askDeleteBloc(this.closest('.bloc'))" class="btn-base delete-btn icon-trash"></button>
         </div>
     </div>
@@ -180,13 +185,17 @@ function ajouterBloc(initialEmpty = false, doRecalc = true) {
 
   blocsContainer.appendChild(bloc);
   
-  // Si ce n'est pas un chargement initial vide, on peut scroller vers le bloc
   if(doRecalc) { 
       recalculer(); 
       checkEmptyState(); 
-      if(!initialEmpty) bloc.scrollIntoView({behavior:'smooth', block:'center'}); 
+      if(!initialEmpty) {
+          bloc.scrollIntoView({behavior:'smooth', block:'center'});
+          // ERGONOMIE : Focus automatique sur le titre
+          setTimeout(() => bloc.querySelector('.bloc-title').focus(), 100);
+      }
   }
 }
+
 
 // Nouvelle version de ajouterLigne qui gère la fusion des colonnes pour le mode "Custom"
 function ajouterLigne(blocOrBtn, catVal, typeVal, fmtVal) {
@@ -904,6 +913,64 @@ function toggleTheme() {
         localStorage.setItem('theme', 'light');
     }
 }
+
+// =================================================================
+// ERGONOMIE (Move & Toggle All)
+// =================================================================
+
+// Déplacer un bloc vers le haut (-1) ou le bas (+1)
+function moveBloc(btn, direction) {
+    const bloc = btn.closest('.bloc');
+    const container = document.getElementById('blocs');
+    
+    if (direction === -1) {
+        // Monter
+        if (bloc.previousElementSibling) {
+            container.insertBefore(bloc, bloc.previousElementSibling);
+            // On scroll pour suivre le bloc
+            bloc.scrollIntoView({behavior:'smooth', block:'center'});
+            saveData(); // On sauvegarde le nouvel ordre
+        }
+    } else {
+        // Descendre
+        if (bloc.nextElementSibling) {
+            container.insertBefore(bloc.nextElementSibling, bloc);
+            bloc.scrollIntoView({behavior:'smooth', block:'center'});
+            saveData();
+        }
+    }
+}
+
+// Tout plier / Tout déplier
+let allCollapsed = false;
+
+function toggleAllAccordions() {
+    const contents = document.querySelectorAll('.bloc-content');
+    const icons = document.querySelectorAll('.toggle-accordion span');
+    
+    allCollapsed = !allCollapsed;
+    
+    contents.forEach((content, index) => {
+        if (allCollapsed) {
+            // On ferme tout
+            content.classList.add('hidden-content');
+            content.style.paddingTop = '0'; 
+            content.style.paddingBottom = '0';
+            if(icons[index]) icons[index].className = 'icon-chevron-right';
+        } else {
+            // On ouvre tout
+            content.classList.remove('hidden-content');
+            setTimeout(() => { 
+                content.style.paddingTop = '15px'; 
+                content.style.paddingBottom = '20px'; 
+            }, 50);
+            if(icons[index]) icons[index].className = 'icon-chevron-down';
+        }
+    });
+    
+    showToast(allCollapsed ? "Vue compacte activée" : "Vue détaillée activée");
+}
+
 
 // Au chargement de la page, on vérifie la préférence sauvegardée
 document.addEventListener('DOMContentLoaded', () => {

@@ -11,6 +11,7 @@
     <header>
         <h1>Quote Generator Allps</h1>
           <div class="header-actions">
+            <button onclick="toggleTheme()" class="btn-base btn-line" title="Mode Sombre">🌙</button>
             <button onclick="saveProject()" class="btn-base btn-action icon-star">Sauvegarder</button>
             <button onclick="openProjectsModal()" class="btn-base btn-line icon-copy">Mes Devis</button>
             <span style="border-right: 1px solid #ddd; margin: 0 5px;"></span> 
@@ -53,6 +54,21 @@
             </div>
         </div>
     </div>
+
+    <div id="save-overlay" class="overlay-common">
+        <div id="save-box">
+            <h3 style="margin-top:0;">💾 Sauvegarder le projet</h3>
+            <p style="color:var(--text-muted); margin-bottom:10px;">Donnez un nom à ce devis.</p>
+            
+            <input type="text" id="save-project-name" class="modal-input" placeholder="Ex: Client Dupont - Brochure A5">
+            
+            <div class="modal-actions">
+                <button onclick="closeSaveModal()" class="btn-base btn-line">Annuler</button>
+                <button onclick="confirmSaveProject()" class="btn-base btn-action">Sauvegarder</button>
+            </div>
+        </div>
+    </div>
+
 
     <div id="prefab-overlay" class="overlay-common">
         <div id="prefab-box">

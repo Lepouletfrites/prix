@@ -588,3 +588,181 @@ td input:focus, td select:focus {
 .project-info small { color: var(--text-muted); font-size: 12px; }
 
 .project-actions { display: flex; gap: 8px; }
+
+
+/* ================================================================= */
+/* 9. DARK MODE (THEME SOMBRE) */
+/* ================================================================= */
+body.dark-mode {
+  /* On écrase les variables de couleur claires par les sombres */
+  
+  /* Fonds */
+  --bg-app: #111827;        /* Fond de page très sombre (presque noir) */
+  --bg-surface: #1f2937;    /* Fond des cartes (Gris foncé) */
+  --bg-input: #374151;      /* Fond des champs (Gris moyen) */
+  
+  /* Textes */
+  --text-main: #f9fafb;     /* Texte quasi blanc */
+  --text-muted: #9ca3af;    /* Texte gris clair */
+  
+  /* Bordures et Ombres */
+  --border-light: #374151;  /* Bordures gris foncé pour se fondre */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5); /* Ombres plus marquées */
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+}
+
+/* Ajustements spécifiques pour le mode sombre */
+body.dark-mode .bloc-title:hover { background-color: var(--bg-input); }
+body.dark-mode .btn-line { 
+    background-color: #374151; 
+    color: #fff; 
+    border-color: #4b5563; 
+}
+body.dark-mode .btn-line:hover { background-color: #4b5563; }
+
+/* Les inputs deviennent clairs quand on écrit dedans, même en mode sombre */
+body.dark-mode td input:focus, 
+body.dark-mode td select:focus {
+    background-color: #4b5563; /* Reste gris foncé mais s'éclaire un peu */
+    color: #fff;
+}
+
+/* Ajustement des modales en mode sombre */
+body.dark-mode #modal-box, 
+body.dark-mode #prefab-box, 
+body.dark-mode #projects-box,
+body.dark-mode #catalog-box {
+    background-color: #1f2937;
+    border: 1px solid #374151;
+}
+body.dark-mode .prefab-header, 
+body.dark-mode .catalog-header,
+body.dark-mode .projects-header {
+    background-color: #111827; /* En-tête plus sombre */
+    border-bottom-color: #374151;
+}
+body.dark-mode .prefab-item, 
+body.dark-mode .project-item {
+    background-color: #1f2937;
+    border-color: #374151;
+}
+
+/* Catalogue : Ajustement des textes sur fonds colorés */
+body.dark-mode .cat-section {
+    border-color: rgba(255,255,255,0.1); /* Bordure subtile */
+}
+body.dark-mode .cat-title {
+    color: #111; /* On garde le titre foncé car le fond reste pastel */
+}
+
+
+/* ================================================================= */
+/* 10. CORRECTIFS DARK MODE (Header, Lignes & Catalogue) */
+/* ================================================================= */
+
+/* 1. HEADER : On force le fond sombre (car il était en blanc transparent) */
+body.dark-mode header {
+    background-color: rgba(17, 24, 39, 0.95); /* Noir/Bleu très foncé */
+    border-bottom-color: var(--border-light);
+}
+
+/* 2. LIGNES & SÉPARATEURS */
+/* Le petit trait vertical dans le header */
+body.dark-mode .header-actions span {
+    border-right-color: #4b5563 !important; /* Gris foncé au lieu de gris clair */
+}
+/* Les boutons blancs (Mes devis, Prefabs...) deviennent foncés */
+body.dark-mode .btn-line {
+    background-color: var(--bg-surface);
+    color: var(--text-main);
+    border-color: var(--border-light);
+}
+body.dark-mode .btn-line:hover {
+    background-color: var(--bg-input);
+}
+
+/* 3. CATALOGUE : LE GROS CORRECTIF */
+/* On utilise !important pour écraser la couleur pastel (Bleu/Jaune) qui vient du JavaScript */
+body.dark-mode .cat-section {
+    background-color: #1f2937 !important; /* Fond gris foncé */
+    border: 1px solid var(--border-light) !important; /* Bordure discrète */
+    box-shadow: none;
+}
+
+/* Le titre de la catégorie dans le catalogue */
+body.dark-mode .cat-title {
+    color: var(--primary-color) !important; /* On remet le bleu vif ou le blanc */
+    border-bottom-color: var(--border-light);
+}
+
+/* Les petits boutons à l'intérieur du catalogue */
+body.dark-mode .btn-service {
+    background-color: #374151 !important; /* Gris moyen */
+    color: #e5e7eb !important; /* Texte clair */
+    border-color: #4b5563 !important;
+}
+body.dark-mode .btn-service:hover {
+    background-color: var(--primary-color) !important; /* Bleu au survol */
+    color: #fff !important;
+    border-color: var(--primary-color) !important;
+}
+
+/* ================================================================= */
+/* 11. MODALE SAUVEGARDE (STYLE) */
+/* ================================================================= */
+#save-overlay {
+    /* On rajoute ces lignes de sécurité pour forcer le positionnement */
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(31, 41, 55, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex; /* Indispensable pour centrer */
+    
+    /* Centrage */
+    justify-content: center;
+    align-items: center; 
+    
+    z-index: var(--z-modal);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+/* La classe pour l'afficher */
+#save-overlay.show { opacity: 1; visibility: visible; }
+
+
+#save-box {
+    background: var(--bg-surface);
+    padding: 25px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    width: 90%;
+    max-width: 400px;
+    border: 1px solid var(--border-light);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Le champ de texte joli et moderne */
+.modal-input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0 20px 0;
+    border: 1px solid var(--border-light);
+    background-color: var(--bg-input);
+    color: var(--text-main);
+    border-radius: var(--radius-md);
+    font-size: 15px;
+    box-sizing: border-box; /* Important pour ne pas dépasser */
+    outline: none;
+    transition: all 0.2s;
+}
+
+.modal-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    background-color: var(--bg-surface);
+}
+
+/* En mode sombre, on s'assure que le titre est de la bonne couleur */
+body.dark-mode #save-box h3 { color: var(--text-main); }

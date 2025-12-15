@@ -731,25 +731,51 @@ function loadPrefab(index) {
 // GESTION DES DOSSIERS (SAVE / LOAD PROJECTS)
 // =================================================================
 
-// 1. Sauvegarder le projet actuel
-function saveProject() {
-    // On demande un nom à l'utilisateur
-    const name = prompt("Nom du devis (ex: Client Dupont - Brochure) :");
-    if (!name || name.trim() === "") return;
+// =================================================================
+// NOUVELLE LOGIQUE DE SAUVEGARDE (Custom Modal)
+// =================================================================
 
-    // On récupère les données actuelles (celles utilisées par le "localStorage" auto)
-    saveData(); // Assure que 'devisData' est à jour
+// 1. Ouvre la jolie fenêtre au lieu du prompt moche
+function saveProject() {
+    const overlay = document.getElementById('save-overlay');
+    const input = document.getElementById('save-project-name');
+    
+    overlay.classList.add('show');
+    
+    // Petit délai pour que le focus fonctionne après l'animation
+    setTimeout(() => input.focus(), 100);
+}
+
+// 2. Ferme la fenêtre
+function closeSaveModal() {
+    document.getElementById('save-overlay').classList.remove('show');
+    document.getElementById('save-project-name').value = ''; // On vide le champ
+}
+
+// 3. Action quand on clique sur "Sauvegarder" dans la fenêtre
+function confirmSaveProject() {
+    const nameInput = document.getElementById('save-project-name');
+    const name = nameInput.value.trim();
+
+    if (!name || name === "") {
+        showToast("Veuillez entrer un nom !");
+        nameInput.focus();
+        return;
+    }
+
+    // --- Logique de sauvegarde identique à avant ---
+    saveData(); 
     const currentData = localStorage.getItem('devisData');
     
     if (!currentData || currentData === "[]") {
         showToast("Rien à sauvegarder (Devis vide)");
+        closeSaveModal();
         return;
     }
 
-    // On récupère la liste des projets existants
     const projects = JSON.parse(localStorage.getItem('myProjects') || '{}');
     
-    // On sauvegarde avec la date
+    // On sauvegarde
     projects[name] = {
         date: new Date().toLocaleString(),
         data: JSON.parse(currentData),
@@ -757,9 +783,18 @@ function saveProject() {
     };
 
     localStorage.setItem('myProjects', JSON.stringify(projects));
-    showToast(`Devis "${name}" sauvegardé !`);
+    
+    closeSaveModal(); // On ferme la fenêtre
+    showToast(`Devis "${name}" sauvegardé avec succès !`);
 }
 
+// 4. Bonus : Permettre de valider avec la touche "Entrée"
+document.getElementById('save-project-name').addEventListener('keyup', function(e) {
+    if (e.key === 'Enter') {
+        confirmSaveProject();
+    }
+});
+ 
 // 2. Ouvrir la modale
 function openProjectsModal() {
     const overlay = document.getElementById('projects-overlay');
@@ -837,6 +872,11 @@ window.addEventListener('click', function(e) {
         closeProjectsModal();
     }
     
+    if (e.target.id === 'save-overlay') {
+    closeSaveModal();
+      
+    }
+    
     // Si on clique sur le fond gris des Prefabs
     if (e.target.id === 'prefab-overlay') {
         closePrefabModal();
@@ -845,6 +885,36 @@ window.addEventListener('click', function(e) {
     // Si on clique sur le fond gris du Catalogue
     if (e.target.id === 'catalog-overlay') {
         closeCatalog(); 
+    }
+});
+
+// =================================================================
+// DARK MODE TOGGLE
+// =================================================================
+function toggleTheme() {
+    document.body.classList.toggle('dark-mode');
+    
+    // On change l'icône du bouton selon le mode
+    const btn = document.querySelector('button[onclick="toggleTheme()"]');
+    if (document.body.classList.contains('dark-mode')) {
+        btn.textContent = '☀️'; // Soleil pour revenir au jour
+        localStorage.setItem('theme', 'dark');
+    } else {
+        btn.textContent = '🌙'; // Lune pour passer à la nuit
+        localStorage.setItem('theme', 'light');
+    }
+}
+
+// Au chargement de la page, on vérifie la préférence sauvegardée
+document.addEventListener('DOMContentLoaded', () => {
+    // ... ton code existant ...
+    
+    // Ajout : Vérification du thème
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        const btn = document.querySelector('button[onclick="toggleTheme()"]');
+        if(btn) btn.textContent = '☀️';
     }
 });
 

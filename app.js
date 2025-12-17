@@ -963,9 +963,7 @@ function copierPourExcel() {
             let excelPU = res.puFinal;
 
             if (res.mint > 0 && (res.qteReelle * res.puFinal) < res.mint) {
-                excelQte = 1; excelPU = res.mint; 
-                // Pour le forfait mini, on ajoute quand même l'info si ce n'est pas déjà dans le nom
-                if(!nom.toLowerCase().includes('forfait')) nom += " (Forfait Min)";
+                excelQte = 1; excelPU = res.mint;  
             } else {
                  if (cat === 'Print' || cat === 'Paper') {
                     // La conversion A5/A6 reste active au cas où ton nom perso contient "A5"

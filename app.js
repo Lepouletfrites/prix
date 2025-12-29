@@ -935,7 +935,7 @@ function generateTextReport(detailed) {
             text += `   > Sous-total : ${totalB.toFixed(2)} €\n`;
         }
     });
-    text += `\n💰 TOTAL : ${totalG.toFixed(2)} €`;
+    text += `\n💰 TOTAL TVAC : ${totalG.toFixed(2)} €`;
     copierTexte(text);
     showToast("Devis copié !");
 }

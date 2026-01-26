@@ -951,30 +951,50 @@ function copierPourExcel() {
             const res = calculateLinePrice(tr, volumes);
             if(!res.valid) return;
 
+            // --- 1. Récupération des valeurs brutes des champs ---
+            // On prend directement ce que l'utilisateur a tapé
+            let valOriginaux = parseFloat(tr.querySelector('.ligne-originaux').value) || 1;
+            let valExemplaires = parseFloat(tr.querySelector('.ligne-exemplaire').value) || 1;
+
             const cat = tr.querySelector('.service-category').value;
             const type = tr.querySelector('.service-type').value;
             const fmt = tr.querySelector('.service-format').value;
             
-            // --- MODIFICATION ICI ---
             let nom = getDisplayName(cat, type, fmt); 
-            // ------------------------
-
-            let excelQte = res.qteReelle;
             let excelPU = res.puFinal;
 
+            // --- 2. Gestion du Minimum de facturation ---
+            // Si le total ligne est < au minimum, on force tout à 1 pour que le total fasse le prix min
             if (res.mint > 0 && (res.qteReelle * res.puFinal) < res.mint) {
-                excelQte = 1; excelPU = res.mint;  
+                valOriginaux = 1;
+                valExemplaires = 1; 
+                excelPU = res.mint;  
             } else {
-                 if (cat === 'Print' || cat === 'Paper') {
-                    // La conversion A5/A6 reste active au cas où ton nom perso contient "A5"
-                    if (fmt.includes('A5')) { excelQte /= 2; excelPU *= 2; nom = nom.replace('A5', 'A4'); }
-                    else if (fmt.includes('A6')) { excelQte /= 4; excelPU *= 4; nom = nom.replace('A6', 'A4'); }
-                 }
+                // --- 3. Correction A5/A6 (Arrondi Supérieur sur les EXEMPLAIRES) ---
+                if (cat === 'Print' || cat === 'Paper') {
+                    if (fmt.includes('A5')) { 
+                        // On divise le nombre d'exemplaires par 2 et on arrondit au-dessus
+                        valExemplaires = Math.ceil(valExemplaires / 2); 
+                        excelPU = excelPU * 2; 
+                        nom = nom.replace('A5', 'A4');
+                    } 
+                    else if (fmt.includes('A6')) { 
+                        // On divise le nombre d'exemplaires par 4 et on arrondit au-dessus
+                        valExemplaires = Math.ceil(valExemplaires / 4); 
+                        excelPU = excelPU * 4; 
+                        nom = nom.replace('A6', 'A4'); 
+                    }
+                }
             }
             
-            const strQte = excelQte.toString().replace('.', ',');
+            // --- 4. Formatage ---
+            const strOrig = valOriginaux.toString().replace('.', ',');
+            const strEx = valExemplaires.toString().replace('.', ',');
             const strPU = excelPU.toFixed(4).replace('.', ',');
-            text += `1\t${nom}\t${strQte}\t${strPU}\n`;
+
+            // --- 5. Construction de la ligne ---
+            // ORDRE DEMANDÉ : Quantité (Orig) | Nom | Nb Exemplaire | Prix Unitaire
+            text += `${strOrig}\t${nom}\t${strEx}\t${strPU}\n`;
         });
     });
     

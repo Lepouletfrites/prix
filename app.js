@@ -387,8 +387,10 @@ function calculateGlobalVolumes() {
         if (isFixed) {
             // Pas d'accumulation de volume pour les frais fixes
         } else {
-            // Ajustement "Coup de main" pour A5/A6 en impression (optimisation planche)
-            if (cat === 'Print') {
+            // --- CORRECTION ICI : Ajout de || cat === 'Paper' ---
+            // Ajustement "Coup de main" pour A5/A6 (optimisation planche)
+            // On arrondit à la planche supérieure pour Print ET Paper
+            if (cat === 'Print' || cat === 'Paper') {
                 if (fmt.includes('A5')) ex = Math.ceil(ex / 2) * 2;
                 else if (fmt.includes('A6')) ex = Math.ceil(ex / 4) * 4;
             }
@@ -403,7 +405,7 @@ function calculateGlobalVolumes() {
     });
     return volumesParGroupe;
 }
-
+// Calcule le prix d'une ligne spécifique
 // Calcule le prix d'une ligne spécifique
 function calculateLinePrice(tr, globalVolumes) {
     const cat = tr.querySelector('.service-category').value;
@@ -430,7 +432,8 @@ function calculateLinePrice(tr, globalVolumes) {
         finalEx = 1; 
         res.qteReelle = 1;
     } else {
-        if (cat === 'Print') {
+        // --- CORRECTION ICI : Ajout de || cat === 'Paper' ---
+        if (cat === 'Print' || cat === 'Paper') {
             if (fmt.includes('A5')) finalEx = Math.ceil(finalEx / 2) * 2;
             else if (fmt.includes('A6')) finalEx = Math.ceil(finalEx / 4) * 4;
         }

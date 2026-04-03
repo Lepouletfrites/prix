@@ -416,117 +416,78 @@ td input[type="number"] {
 .prefab-actions { display: flex; gap: 10px; }
 
 /* ================================================================= */
-/* 7. CATALOGUE (DESIGN PREMIUM - V2) */
+/* 7. CATALOGUE (VUE GLOBALE PREMIUM) */
 /* ================================================================= */
 #catalog-overlay { 
     z-index: var(--z-catalog); 
     align-items: center; /* Centre la modale au milieu de l'écran */
     background: rgba(17, 24, 39, 0.6); 
-    backdrop-filter: blur(5px); /* Effet verre sur l'arrière-plan */
+    backdrop-filter: blur(5px); /* Effet verre */
 }
 
 #catalog-box { 
     width: 95%; 
-    max-width: 1100px; 
-    height: 80vh; 
-    max-height: 800px;
-    background: var(--bg-surface);
+    max-width: 1200px; 
+    height: 85vh; 
+    max-height: 900px;
+    background: var(--bg-app); /* Fond gris clair pour faire ressortir les cartes */
     border-radius: var(--radius-lg);
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    position: relative;
 }
 
 #catalog-content {
-    flex-grow: 1;
-    overflow: hidden;
-    padding: 0; 
-}
-
-.catalog-layout {
-    display: flex;
-    height: 100%;
-}
-
-/* --- LE MENU À GAUCHE (Style Pilules) --- */
-.catalog-sidebar {
-    width: 240px;
-    background-color: var(--bg-surface); /* Blanc pur */
-    border-right: 1px solid var(--border-light);
+    padding: 30px;
     overflow-y: auto;
-    flex-shrink: 0; 
-    padding: 20px 15px; /* De l'espace autour des onglets */
+    overflow-x: hidden; /* Sécurité anti-scroll horizontal */
 }
 
-.sidebar-item {
-    padding: 12px 18px;
-    cursor: pointer;
-    font-weight: 600;
-    color: var(--text-muted);
-    transition: all 0.2s ease;
-    border-radius: var(--radius-md); /* Onglets arrondis */
-    margin-bottom: 5px;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
+/* Le système Masonry (Tetris) */
+.masonry-wrapper {
+    column-count: 3;
+    column-gap: 30px;
 }
 
-.sidebar-item:hover {
-    background-color: var(--bg-input);
-    color: var(--text-main);
-    transform: translateX(3px); /* Petit effet de glissement au survol */
-}
-
-.sidebar-item.active {
-    background-color: rgba(37, 99, 235, 0.08); /* Fond bleu très léger */
-    color: var(--primary-color);
-}
-
-/* --- LE CONTENU À DROITE --- */
-.catalog-main {
-    flex-grow: 1;
-    padding: 40px;
-    overflow-y: auto;
-    background-color: var(--bg-app); /* Gris très clair pour contraster */
-}
-
-/* La belle carte blanche au centre */
-.cat-content {
-    background: var(--bg-surface);
+/* Les cartes de couleurs */
+.cat-section {
+    break-inside: avoid;
+    display: inline-block; /* Crucial pour le Masonry */
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 30px;
+    
     border-radius: var(--radius-lg);
-    padding: 40px;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-light);
-    max-width: 800px;
-    margin: 0 auto; /* Centre la carte parfaitement */
-    animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); /* Animation d'apparition */
+    padding: 25px;
+    box-shadow: var(--shadow-card);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
+.cat-section:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-float);
 }
 
 .cat-title {
-    font-size: 22px;
+    font-size: 18px;
     font-weight: 800;
     color: var(--text-main);
-    padding-bottom: 20px;
-    margin-bottom: 30px;
-    border-bottom: 2px solid var(--bg-app);
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid rgba(0,0,0,0.05);
     display: flex;
     align-items: center;
+    text-transform: uppercase;
     letter-spacing: -0.5px;
 }
 
-.type-group { margin-bottom: 35px; }
+.type-group { margin-bottom: 25px; }
 
-/* Les sous-titres transformés en badges premium */
+/* Sous-titres transformés en badges Premium */
 .type-label { 
     font-weight: 700; 
-    margin-bottom: 15px; 
+    margin-bottom: 12px; 
     display: inline-block; 
     color: var(--primary-color);
     font-size: 12px;
@@ -537,50 +498,60 @@ td input[type="number"] {
     border-radius: 20px;
 }
 
-/* Grille de boutons aérée */
+/* Grille de boutons */
 .format-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); /* Boutons plus larges */
-    gap: 15px;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); 
+    gap: 12px;
 }
 
 .btn-service {
-    background: var(--bg-surface) !important; 
-    border: 1px solid var(--border-light) !important; 
     color: var(--text-main);
-    padding: 15px 10px;
+    padding: 12px 8px;
     border-radius: var(--radius-md);
     cursor: pointer;
     text-align: center;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     box-shadow: 0 1px 2px rgba(0,0,0,0.02);
 }
 
 .btn-service:hover {
+    background: #fff !important;
     transform: translateY(-3px);
-    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.15); /* Ombre bleutée */
+    box-shadow: 0 8px 12px -3px rgba(37, 99, 235, 0.15); /* Belle ombre bleue */
     color: var(--primary-color) !important;
-    border-color: rgba(37, 99, 235, 0.4) !important;
+    border-color: rgba(37, 99, 235, 0.3) !important;
 }
 
-/* --- RESPONSIVE POUR PETITS ÉCRANS --- */
-@media (max-width: 768px) {
-    .catalog-layout { flex-direction: column; }
-    .catalog-sidebar { 
-        width: 100%; 
-        border-right: none; 
-        border-bottom: 1px solid var(--border-light); 
-        display: flex; 
-        padding: 10px;
-        overflow-x: auto;
-        overflow-y: hidden;
-    }
-    .sidebar-item { margin-bottom: 0; margin-right: 5px; white-space: nowrap; }
-    .sidebar-item:hover { transform: none; }
-    .catalog-main { padding: 15px; }
-    .cat-content { padding: 20px; }
+/* --- RESPONSIVE --- */
+@media (max-width: 900px) { .masonry-wrapper { column-count: 2; } }
+@media (max-width: 600px) { .masonry-wrapper { column-count: 1; } }
+
+/* ================================================================= */
+/* CORRECTIFS DARK MODE (À remplacer dans la section 10) */
+/* ================================================================= */
+body.dark-mode #catalog-box { background-color: #111827; }
+body.dark-mode .cat-section { 
+    background-color: #1f2937 !important; 
+    border: 1px solid #374151 !important; 
+}
+body.dark-mode .cat-title { color: #f9fafb !important; border-bottom-color: #374151; }
+body.dark-mode .type-label { 
+    background-color: rgba(59, 130, 246, 0.15); 
+    color: #93c5fd; 
+}
+body.dark-mode .btn-service {
+    background-color: #374151 !important;
+    border-color: #4b5563 !important;
+    color: #e5e7eb !important;
+}
+body.dark-mode .btn-service:hover {
+    background-color: var(--primary-color) !important;
+    color: #fff !important;
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
 }
 /* ================================================================= */
 /* 8. TOAST NOTIFICATION */

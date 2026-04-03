@@ -416,143 +416,120 @@ td input[type="number"] {
 .prefab-actions { display: flex; gap: 10px; }
 
 /* ================================================================= */
-/* 7. CATALOGUE (VUE GLOBALE PREMIUM) */
+/* 7. CATALOGUE (HAUTE DENSITÉ - COMPACT) */
 /* ================================================================= */
 #catalog-overlay { 
     z-index: var(--z-catalog); 
-    align-items: center; /* Centre la modale au milieu de l'écran */
+    align-items: center; 
     background: rgba(17, 24, 39, 0.6); 
-    backdrop-filter: blur(5px); /* Effet verre */
+    backdrop-filter: blur(5px);
 }
 
 #catalog-box { 
-    width: 95%; 
-    max-width: 1200px; 
-    height: 85vh; 
-    max-height: 900px;
-    background: var(--bg-app); /* Fond gris clair pour faire ressortir les cartes */
-    border-radius: var(--radius-lg);
+    width: 98%; /* On prend presque toute la largeur de l'écran */
+    max-width: 1400px; /* Plus large pour faire tenir 4 colonnes */
+    height: 92vh; /* On prend presque toute la hauteur */
+    max-height: 1000px;
+    background: var(--bg-app); 
+    border-radius: var(--radius-md);
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
     display: flex;
     flex-direction: column;
 }
 
 #catalog-content {
-    padding: 30px;
+    padding: 15px; /* Moins d'espace perdu sur les bords extérieurs */
     overflow-y: auto;
-    overflow-x: hidden; /* Sécurité anti-scroll horizontal */
+    overflow-x: hidden; 
 }
 
-/* Le système Masonry (Tetris) */
+/* Le système Masonry (Tetris) - On passe à 4 colonnes ! */
 .masonry-wrapper {
-    column-count: 3;
-    column-gap: 30px;
+    column-count: 4; /* 4 colonnes pour réduire le scroll vertical */
+    column-gap: 15px; /* Espacement très réduit entre les colonnes */
 }
 
-/* Les cartes de couleurs */
+/* Les cartes de couleurs hyper compactes */
 .cat-section {
     break-inside: avoid;
-    display: inline-block; /* Crucial pour le Masonry */
+    display: inline-block; 
     width: 100%;
     box-sizing: border-box;
-    margin-bottom: 30px;
+    margin-bottom: 15px; /* Très peu de marge en bas */
     
-    border-radius: var(--radius-lg);
-    padding: 25px;
-    box-shadow: var(--shadow-card);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: var(--radius-sm); /* Coins moins arrondis pour gagner de la place */
+    padding: 12px; /* Espaces internes divisés par deux */
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     position: relative;
 }
 
 .cat-section:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-float);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card);
 }
 
+/* Titres plus petits */
 .cat-title {
-    font-size: 18px;
+    font-size: 15px; /* Taille réduite */
     font-weight: 800;
     color: var(--text-main);
-    padding-bottom: 15px;
-    margin-bottom: 20px;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
     border-bottom: 2px solid rgba(0,0,0,0.05);
     display: flex;
     align-items: center;
     text-transform: uppercase;
-    letter-spacing: -0.5px;
 }
 
-.type-group { margin-bottom: 25px; }
+.type-group { margin-bottom: 12px; }
 
-/* Sous-titres transformés en badges Premium */
+/* Sous-titres (badges) miniaturisés */
 .type-label { 
     font-weight: 700; 
-    margin-bottom: 12px; 
+    margin-bottom: 6px; 
     display: inline-block; 
     color: var(--primary-color);
-    font-size: 12px;
+    font-size: 10px; /* Taille micro mais lisible car majuscule */
     text-transform: uppercase;
     letter-spacing: 0.5px;
     background: rgba(37, 99, 235, 0.1);
-    padding: 6px 12px;
-    border-radius: 20px;
+    padding: 3px 6px;
+    border-radius: 8px;
 }
 
-/* Grille de boutons */
+/* Grille de boutons resserrée au maximum */
 .format-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); 
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); /* Boutons tout petits */
+    gap: 6px; /* Espace millimétré entre les boutons */
 }
 
+/* Boutons "pilules" hyper compacts */
 .btn-service {
     color: var(--text-main);
-    padding: 12px 8px;
-    border-radius: var(--radius-md);
+    padding: 6px 2px; /* Presque plus de vide autour du texte */
+    border-radius: var(--radius-sm);
     cursor: pointer;
     text-align: center;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    font-size: 13px;
+    transition: all 0.2s;
+    font-size: 11px; /* Texte réduit */
     font-weight: 600;
     box-shadow: 0 1px 2px rgba(0,0,0,0.02);
 }
 
 .btn-service:hover {
     background: #fff !important;
-    transform: translateY(-3px);
-    box-shadow: 0 8px 12px -3px rgba(37, 99, 235, 0.15); /* Belle ombre bleue */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px -2px rgba(37, 99, 235, 0.15); 
     color: var(--primary-color) !important;
-    border-color: rgba(37, 99, 235, 0.3) !important;
+    border-color: rgba(37, 99, 235, 0.4) !important;
 }
 
-/* --- RESPONSIVE --- */
-@media (max-width: 900px) { .masonry-wrapper { column-count: 2; } }
-@media (max-width: 600px) { .masonry-wrapper { column-count: 1; } }
-
-/* ================================================================= */
-/* CORRECTIFS DARK MODE (À remplacer dans la section 10) */
-/* ================================================================= */
-body.dark-mode #catalog-box { background-color: #111827; }
-body.dark-mode .cat-section { 
-    background-color: #1f2937 !important; 
-    border: 1px solid #374151 !important; 
-}
-body.dark-mode .cat-title { color: #f9fafb !important; border-bottom-color: #374151; }
-body.dark-mode .type-label { 
-    background-color: rgba(59, 130, 246, 0.15); 
-    color: #93c5fd; 
-}
-body.dark-mode .btn-service {
-    background-color: #374151 !important;
-    border-color: #4b5563 !important;
-    color: #e5e7eb !important;
-}
-body.dark-mode .btn-service:hover {
-    background-color: var(--primary-color) !important;
-    color: #fff !important;
-    border-color: var(--primary-color) !important;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-}
+/* --- RESPONSIVE OPTIMISÉ --- */
+@media (max-width: 1200px) { .masonry-wrapper { column-count: 3; } } /* 3 col sur les petits pc portables */
+@media (max-width: 900px) { .masonry-wrapper { column-count: 2; } }  /* 2 col sur tablette */
+@media (max-width: 600px) { .masonry-wrapper { column-count: 1; } }  /* 1 col sur smartphone */
 /* ================================================================= */
 /* 8. TOAST NOTIFICATION */
 /* ================================================================= */

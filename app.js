@@ -59,7 +59,7 @@ function closeCatalog() {
   currentBlocForCatalog = null;
 }
 
-function renderCatalog() {
+function  {
   const container = document.getElementById('catalog-content');
   if (!container || container.innerHTML.trim() !== "") return; // Évite de re-générer si déjà fait
 
@@ -123,7 +123,7 @@ function renderCatalog() {
       html += `</div>`;
     }
   }
-  container.innerHTML = html;
+  container.innerHTML = `<div class="masonry-wrapper">${html}</div>`;
 }
 
 function selectServiceFromCatalog(cat, type, fmt) {

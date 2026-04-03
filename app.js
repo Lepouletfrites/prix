@@ -59,7 +59,7 @@ function closeCatalog() {
   currentBlocForCatalog = null;
 }
 
-function  {
+function renderCatalog(){
   const container = document.getElementById('catalog-content');
   if (!container || container.innerHTML.trim() !== "") return; // Évite de re-générer si déjà fait
 

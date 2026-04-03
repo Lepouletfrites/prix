@@ -433,35 +433,39 @@ td input[type="number"] {
     height: 85vh; 
     max-height: 900px;
 }
+/* 1. La boîte principale ne gère plus que le fond et le scroll */
 #catalog-content {
     padding: 25px;
     overflow-y: auto;
     overflow-x: hidden; /* Sécurité anti-scroll horizontal */
     background-color: #f8fafc;
-    
-    /* On remplace le column-count par une Grille CSS moderne */
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 25px;
-    align-items: start; /* Crucial : empêche les cartes de s'étirer verticalement pour faire la même taille */
+    display: block; /* On supprime la Grid */
 }
-/* IMPORTANT : On ne force PAS de background-color ici. 
- On laisse le JavaScript appliquer les couleurs pastel.
- On ajoute juste l'ombre et la forme.
-*/
+
+/* 2. La sous-boîte magique qui gère les colonnes */
+.masonry-wrapper {
+    column-count: 3;
+    column-gap: 25px;
+}
+
+/* Responsive pour les colonnes */
+@media (max-width: 900px) { .masonry-wrapper { column-count: 2; } }
+@media (max-width: 600px) { .masonry-wrapper { column-count: 1; } }
+
+/* 3. On sécurise les blocs pour l'emboîtement */
 .cat-section {
-    break-inside: avoid;
+    break-inside: avoid; /* Empêche le bloc de se couper sur 2 colonnes */
+    display: inline-block; /* Sécurité supplémentaire indispensable pour Chrome */
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 25px; /* On remet la marge en bas */
+    
     border-radius: var(--radius-md);
     padding: 20px;
-    /* margin-bottom: 25px; <-- Tu peux supprimer ça, le "gap" de la grille s'en charge */
     box-shadow: var(--shadow-sm);
     transition: transform 0.2s;
     border: 1px solid rgba(0,0,0,0.05);
     position: relative;
-    
-    /* Nouvelles règles de sécurité */
-    width: 100%; 
-    box-sizing: border-box;
 }
 .cat-section:hover { 
     transform: translateY(-3px); 

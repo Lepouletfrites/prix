@@ -261,6 +261,20 @@ td input:focus, td select:focus {
 #total-general { font-size: 36px; font-weight: 800; color: var(--primary-color); letter-spacing: -1px; }
 
 /* ================================================================= */
+/* MASQUER LES FLÈCHES DES INPUTS NUMBER (Chrome, Safari, Edge, Opera) */
+/* ================================================================= */
+td input[type="number"]::-webkit-outer-spin-button,
+td input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Masquer pour Firefox */
+td input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+/* ================================================================= */
 /* 5. BOUTONS & ICONS */
 /* ================================================================= */
 .btn-base {
@@ -422,25 +436,32 @@ td input:focus, td select:focus {
 #catalog-content {
     padding: 25px;
     overflow-y: auto;
+    overflow-x: hidden; /* Sécurité anti-scroll horizontal */
     background-color: #f8fafc;
-    /* Mise en page Colonnes (Masonry) */
-    column-count: 3;
-    column-gap: 25px;
+    
+    /* On remplace le column-count par une Grille CSS moderne */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+    align-items: start; /* Crucial : empêche les cartes de s'étirer verticalement pour faire la même taille */
 }
-
 /* IMPORTANT : On ne force PAS de background-color ici. 
  On laisse le JavaScript appliquer les couleurs pastel.
  On ajoute juste l'ombre et la forme.
 */
 .cat-section {
-    break-inside: avoid; /* Empêche de couper les cartes */
+    break-inside: avoid;
     border-radius: var(--radius-md);
     padding: 20px;
-    margin-bottom: 25px;
+    /* margin-bottom: 25px; <-- Tu peux supprimer ça, le "gap" de la grille s'en charge */
     box-shadow: var(--shadow-sm);
     transition: transform 0.2s;
-    border: 1px solid rgba(0,0,0,0.05); /* Bordure très subtile */
-    position: relative; /* Pour le contexte d'empilement */
+    border: 1px solid rgba(0,0,0,0.05);
+    position: relative;
+    
+    /* Nouvelles règles de sécurité */
+    width: 100%; 
+    box-sizing: border-box;
 }
 .cat-section:hover { 
     transform: translateY(-3px); 

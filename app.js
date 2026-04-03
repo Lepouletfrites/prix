@@ -59,11 +59,10 @@ function closeCatalog() {
   currentBlocForCatalog = null;
 }
 
-function renderCatalog(){
+function renderCatalog() {
   const container = document.getElementById('catalog-content');
-  if (!container || container.innerHTML.trim() !== "") return; // Évite de re-générer si déjà fait
+  if (!container || container.innerHTML.trim() !== "") return;
 
-  // Configuration visuelle des catégories
   const catalogStyles = {
     'Print':      { icon: '🖨️', color: '#eef6fc', border: '#b6dbf5' },
     'Paper':      { icon: '📄', color: '#fff8e1', border: '#ffe082' },
@@ -75,11 +74,15 @@ function renderCatalog(){
     'Special':    { icon: '✨', color: '#f5f5f5', border: '#e0e0e0' }
   };
 
-  let html = '';
+  // On crée deux zones : Le menu latéral (sidebar) et le contenu (main)
+  let sidebarHtml = '<div class="catalog-sidebar">';
+  let mainHtml = '<div class="catalog-main">';
 
-  // A. Section "Divers / Manuel"
-  html += `
-    <div class="cat-section" style="background-color: #ffffff; border: 2px dashed var(--accent-color);">
+  // 1. Onglet "Divers / Manuel" (Actif par défaut)
+  sidebarHtml += `<div class="sidebar-item active" data-target="Custom" onclick="switchCategory('Custom')">⚡ Divers</div>`;
+  
+  mainHtml += `
+    <div id="cat-Custom" class="cat-content" style="display: block; background-color: #ffffff; border: 2px dashed var(--accent-color);">
       <div class="cat-title" style="color: var(--accent-color);">⚡ Divers / Manuel</div>
       <div class="type-group">
         <button class="btn-service" style="width:100%; font-weight:bold; padding:15px; background-color:var(--secondary-color);" 
@@ -89,43 +92,68 @@ function renderCatalog(){
       </div>
     </div>`;
 
-  // B. Boucle sur les services (window.services doit être défini dans data.js)
+  // 2. Boucle sur les autres catégories
   if (window.services) {
     for (const [catName, catData] of Object.entries(window.services)) {
       const style = catalogStyles[catName] || { icon: '📦', color: '#ffffff', border: '#e0e0e0' };
+      const safeId = catName.replace(/\s+/g, '-'); // Sécurité pour les ID (ex: "Big size" -> "Big-size")
       
-      html += `<div class="cat-section" style="background-color: ${style.color}; border: 1px solid ${style.border};">`;
-      html += `  <div class="cat-title"><span style="font-size: 1.4em; margin-right: 8px;">${style.icon}</span> ${catName}</div>`;
+      // Lien dans le menu latéral
+      sidebarHtml += `<div class="sidebar-item" data-target="${safeId}" onclick="switchCategory('${safeId}')">${style.icon} ${catName}</div>`;
+      
+      // Boîte de contenu (cachée par défaut avec display:none)
+      mainHtml += `<div id="cat-${safeId}" class="cat-content" style="display: none; background-color: ${style.color}; border: 1px solid ${style.border};">`;
+      mainHtml += `  <div class="cat-title"><span style="font-size: 1.4em; margin-right: 8px;">${style.icon}</span> ${catName}</div>`;
       
       for (const [typeName, typeData] of Object.entries(catData)) {
-        html += `<div class="type-group">`;
+        mainHtml += `<div class="type-group">`;
         
         if (typeof typeData === 'object' && !Array.isArray(typeData)) {
-          html += `<span class="type-label" style="opacity:0.8;">${typeName}</span>`;
-          html += `<div class="format-grid">`;
+          mainHtml += `<span class="type-label" style="opacity:0.8;">${typeName}</span>`;
+          mainHtml += `<div class="format-grid">`;
           
           for (const fmtName of Object.keys(typeData)) {
             const safeCat = catName.replace(/'/g, "\\'");
             const safeType = typeName.replace(/'/g, "\\'");
             const safeFmt = fmtName.replace(/'/g, "\\'");
-            
             let label = (fmtName === 'Standard' || fmtName === 'Option') ? typeName : fmtName;
 
-            html += `<button class="btn-service" style="background: rgba(255,255,255,0.7); border-color: ${style.border};" 
+            mainHtml += `<button class="btn-service" style="background: rgba(255,255,255,0.7); border-color: ${style.border};" 
                         onclick="selectServiceFromCatalog('${safeCat}', '${safeType}', '${safeFmt}')">
                         ${label}
                      </button>`;
           }
-          html += `</div>`;
+          mainHtml += `</div>`;
         }
-        html += `</div>`;
+        mainHtml += `</div>`;
       }
-      html += `</div>`;
+      mainHtml += `</div>`;
     }
   }
-  container.innerHTML = `<div class="masonry-wrapper">${html}</div>`;
+
+  sidebarHtml += '</div>';
+  mainHtml += '</div>';
+
+  // On injecte le tout
+  container.innerHTML = `<div class="catalog-layout">${sidebarHtml}${mainHtml}</div>`;
 }
 
+// Fonction pour basculer d'un onglet à l'autre
+function switchCategory(catId) {
+    // 1. Cacher tous les contenus
+    document.querySelectorAll('.cat-content').forEach(el => el.style.display = 'none');
+    
+    // 2. Retirer la classe 'active' de tous les onglets du menu
+    document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+    
+    // 3. Afficher le bon contenu
+    const targetContent = document.getElementById('cat-' + catId);
+    if (targetContent) targetContent.style.display = 'block';
+    
+    // 4. Mettre en surbrillance le bon onglet
+    const targetTab = document.querySelector(`.sidebar-item[data-target="${catId}"]`);
+    if (targetTab) targetTab.classList.add('active');
+}
 function selectServiceFromCatalog(cat, type, fmt) {
   if (!currentBlocForCatalog) return;
   ajouterLigne(currentBlocForCatalog, cat, type, fmt);
@@ -1073,3 +1101,4 @@ window.selectServiceFromCatalog = selectServiceFromCatalog;
 window.recalculer = recalculer;
 window.majExemplairesLignes = majExemplairesLignes;
 window.confirmSaveProject = confirmSaveProject;
+window.switchCategory = switchCategory;

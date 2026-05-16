@@ -61,69 +61,107 @@ function closeCatalog() {
 
 function renderCatalog() {
   const container = document.getElementById('catalog-content');
-  if (!container || container.innerHTML.trim() !== "") return; 
+  if (!container || container.innerHTML.trim() !== "") return;
 
-  const catalogStyles = {
-    'Print':      { icon: '🖨️', color: '#eef6fc', border: '#b6dbf5' },
-    'Paper':      { icon: '📄', color: '#fff8e1', border: '#ffe082' },
-    'Finishing':  { icon: '✂️', color: '#e8f5e9', border: '#a5d6a7' },
-    'Lamination': { icon: '🛡️', color: '#f3e5f5', border: '#ce93d8' },
-    'Plan':       { icon: '📐', color: '#e0f7fa', border: '#80deea' },
-    'Big size':   { icon: '🖼️', color: '#fff3e0', border: '#ffcc80' },
-    'Binding':    { icon: '📒', color: '#fbe9e7', border: '#ffab91' },
-    'Special':    { icon: '✨', color: '#f5f5f5', border: '#e0e0e0' }
+  const catalogMeta = {
+    'Print':      { icon: '🖨️' },
+    'Paper':      { icon: '📄' },
+    'Finishing':  { icon: '✂️' },
+    'Lamination': { icon: '🛡️' },
+    'Plan':       { icon: '📐' },
+    'Big size':   { icon: '🖼️' },
+    'Binding':    { icon: '📒' },
+    'Special':    { icon: '✨' }
   };
 
-  let html = '';
+  // Build sidebar buttons
+  let sidebarHtml = '';
+  let panelsHtml = '';
+  let firstActive = true;
 
-  // A. Section "Divers / Manuel"
-  html += `
-    <div class="cat-section" style="background-color: #ffffff; border: 2px dashed var(--accent-color);">
-      <div class="cat-title" style="color: var(--accent-color);">⚡ Divers / Manuel</div>
-      <div class="type-group">
-        <button class="btn-service" style="width:100%; font-weight:bold; padding:15px; background-color:var(--secondary-color);" 
-                onclick="selectServiceFromCatalog('Custom', '', '')">
-          ➕ Ajouter ligne vierge (Description libre)
-        </button>
+  // "Divers" entry in sidebar
+  sidebarHtml += `
+    <button class="sidebar-cat-btn${firstActive ? ' active' : ''}" onclick="switchCategory(this, 'cat-panel-custom')">
+      <span class="sidebar-cat-icon">⚡</span> Divers
+    </button>`;
+  sidebarHtml += `<div class="sidebar-divider"></div>`;
+
+  // "Divers" panel
+  panelsHtml += `
+    <div class="cat-panel${firstActive ? ' active' : ''}" id="cat-panel-custom">
+      <div class="cat-panel-header">
+        <span class="cat-panel-icon">⚡</span>
+        <h3 class="cat-panel-title">Divers / Manuel</h3>
       </div>
+      <button class="cat-quick-add" onclick="selectServiceFromCatalog('Custom', '', '')">
+        <span class="cat-quick-add-icon">➕</span>
+        Ajouter une ligne vierge (description libre)
+      </button>
     </div>`;
+  firstActive = false;
 
-  // B. Boucle sur les services
   if (window.services) {
     for (const [catName, catData] of Object.entries(window.services)) {
-      const style = catalogStyles[catName] || { icon: '📦', color: '#ffffff', border: '#e0e0e0' };
-      
-      html += `<div class="cat-section" style="background-color: ${style.color}; border: 1px solid ${style.border};">`;
-      html += `  <div class="cat-title"><span style="font-size: 1.4em; margin-right: 8px;">${style.icon}</span> ${catName}</div>`;
-      
-      for (const [typeName, typeData] of Object.entries(catData)) {
-        html += `<div class="type-group">`;
-        
-        if (typeof typeData === 'object' && !Array.isArray(typeData)) {
-          html += `<span class="type-label">${typeName}</span>`;
-          html += `<div class="format-grid">`;
-          
-          for (const fmtName of Object.keys(typeData)) {
-            const safeCat = catName.replace(/'/g, "\\'");
-            const safeType = typeName.replace(/'/g, "\\'");
-            const safeFmt = fmtName.replace(/'/g, "\\'");
-            
-            let label = (fmtName === 'Standard' || fmtName === 'Option') ? typeName : fmtName;
+      const meta = catalogMeta[catName] || { icon: '📦' };
+      const panelId = 'cat-panel-' + catName.replace(/\s+/g, '-').toLowerCase();
 
-            html += `<button class="btn-service" style="background: rgba(255,255,255,0.8); border-color: ${style.border};" 
-                        onclick="selectServiceFromCatalog('${safeCat}', '${safeType}', '${safeFmt}')">
-                        ${label}
-                     </button>`;
-          }
-          html += `</div>`;
+      // Sidebar button
+      sidebarHtml += `
+        <button class="sidebar-cat-btn" onclick="switchCategory(this, '${panelId}')">
+          <span class="sidebar-cat-icon">${meta.icon}</span> ${catName}
+        </button>`;
+
+      // Build panel content
+      let panelInner = '';
+      for (const [typeName, typeData] of Object.entries(catData)) {
+        if (typeof typeData !== 'object' || Array.isArray(typeData)) continue;
+
+        panelInner += `<div class="type-group">`;
+        // Only show type label if it's meaningful (not a blank space)
+        if (typeName.trim() !== '') {
+          panelInner += `<span class="type-label">${typeName}</span>`;
         }
-        html += `</div>`;
+        panelInner += `<div class="format-grid">`;
+
+        for (const fmtName of Object.keys(typeData)) {
+          const safeCat  = catName.replace(/'/g, "\\'");
+          const safeType = typeName.replace(/'/g, "\\'");
+          const safeFmt  = fmtName.replace(/'/g, "\\'");
+          const label = (fmtName === 'Standard' || fmtName === 'Option') ? typeName : fmtName;
+
+          panelInner += `<button class="btn-service" onclick="selectServiceFromCatalog('${safeCat}', '${safeType}', '${safeFmt}')">${label}</button>`;
+        }
+
+        panelInner += `</div></div>`;
       }
-      html += `</div>`;
+
+      panelsHtml += `
+        <div class="cat-panel" id="${panelId}">
+          <div class="cat-panel-header">
+            <span class="cat-panel-icon">${meta.icon}</span>
+            <h3 class="cat-panel-title">${catName}</h3>
+          </div>
+          ${panelInner}
+        </div>`;
     }
   }
-  // On enveloppe le tout pour l'effet briques qui s'emboîtent
-  container.innerHTML = `<div class="masonry-wrapper">${html}</div>`;
+
+  container.innerHTML = `
+    <div class="catalog-body">
+      <nav class="catalog-sidebar">${sidebarHtml}</nav>
+      <div class="catalog-main">${panelsHtml}</div>
+    </div>`;
+}
+
+function switchCategory(btn, panelId) {
+  // Update sidebar active state
+  btn.closest('.catalog-sidebar').querySelectorAll('.sidebar-cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  // Show correct panel
+  btn.closest('.catalog-body').querySelectorAll('.cat-panel').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById(panelId);
+  if (target) target.classList.add('active');
 }
 function selectServiceFromCatalog(cat, type, fmt) {
   if (!currentBlocForCatalog) return;

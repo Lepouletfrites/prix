@@ -941,43 +941,78 @@ function copierTexte(text) {
     document.body.removeChild(el);
 }
 
-function copierDevis() { generateTextReport(false); }
-function copierDevisDetaille() { generateTextReport(true); }
-
-function generateTextReport(detailed) {
-    let text = `📄 DEVIS - ${new Date().toLocaleDateString('fr-FR')}\n=================\n`;
+function copierDevis() {
     let totalG = 0;
-    
-    document.querySelectorAll('.bloc').forEach((b, i) => {
-        const title = b.querySelector('.bloc-title').value || `Lot ${i+1}`;
-        const totalB = parseFloat(b.dataset.total) || 0;
-        const qty = parseFloat(b.dataset.qty) || 0;
-        totalG += totalB;
-        
-        if (!detailed) {
-            text += `▪️ ${title} (${qty} ex) : ${totalB.toFixed(2)} €\n`;
-        } else {
-            text += `\n📦 ${title.toUpperCase()} (${qty} ex)\n`;
-            b.querySelectorAll('tbody tr').forEach((tr) => {
-               const cat = tr.querySelector('.service-category').value;
-               const type = tr.querySelector('.service-type').value;
-               const fmt = tr.querySelector('.service-format').value;
-               const tot = tr.querySelector('.total').textContent;
-               
-               if(!cat) return;
-
-               // --- MODIFICATION ICI : On fait juste confiance à la fonction ---
-               const lbl = getDisplayName(cat, type, fmt);
-               // ---------------------------------------------------------------
-
-               text += `   ▫️ ${lbl} : ${tot} €\n`;
-            });
-            text += `   > Sous-total : ${totalB.toFixed(2)} €\n`;
-        }
+    document.querySelectorAll('.bloc').forEach(b => {
+        totalG += parseFloat(b.dataset.total) || 0;
     });
-    text += `\n💰 TOTAL TVAC : ${totalG.toFixed(2)} €`;
+    const text = `Le total est de ${totalG.toFixed(2)} €`;
     copierTexte(text);
-    showToast("Devis copié !");
+    showToast("Résumé copié !");
+}
+
+function copierDevisDetaille() {
+    const volumes = calculateGlobalVolumes();
+    // En-têtes fixes bilingues
+    const header = "Nbre\tType de travail\tExemplaires\tPrix unit.\tTotal orig.\tOmschrijving\tExemplaren\tStukprijs\tTotaal";
+    let rows = "";
+    let totalG = 0;
+
+    document.querySelectorAll('.bloc').forEach((bloc, i) => {
+        const title = bloc.querySelector('.bloc-title').value || `Lot ${i+1}`;
+        // Ligne de séparation de bloc (nom, total vide)
+        rows += `\t${title}\t\t\t0,00 €\n`;
+
+        bloc.querySelectorAll('tbody tr').forEach(tr => {
+            const res = calculateLinePrice(tr, volumes);
+            if (!res.valid) return;
+
+            const cat = tr.querySelector('.service-category').value;
+            const type = tr.querySelector('.service-type').value;
+            const fmt = tr.querySelector('.service-format').value;
+
+            let valOriginaux = parseFloat(tr.querySelector('.ligne-originaux').value) || 1;
+            let valExemplaires = parseFloat(tr.querySelector('.ligne-exemplaire').value) || 1;
+            let nom = getDisplayName(cat, type, fmt);
+            let excelPU = res.puFinal;
+            let lineTotal = res.finalTotal;
+
+            if (res.mint > 0 && (res.qteReelle * res.puFinal) < res.mint) {
+                valOriginaux = 1;
+                valExemplaires = 1;
+                excelPU = res.mint;
+                lineTotal = res.mint;
+            } else {
+                if (cat === 'Print' || cat === 'Paper') {
+                    if (fmt.includes('A5')) {
+                        valExemplaires = Math.ceil(valExemplaires / 2);
+                        excelPU = excelPU * 2;
+                        nom = nom.replace('A5', 'A4');
+                    } else if (fmt.includes('A6')) {
+                        valExemplaires = Math.ceil(valExemplaires / 4);
+                        excelPU = excelPU * 4;
+                        nom = nom.replace('A6', 'A4');
+                    }
+                }
+            }
+
+            totalG += lineTotal;
+
+            const strOrig = valOriginaux.toString().replace('.', ',');
+            const strEx = valExemplaires.toString().replace('.', ',');
+            const strPU = excelPU.toFixed(4).replace('.', ',');
+            const strTotal = lineTotal.toFixed(2).replace('.', ',') + ' €';
+
+            rows += `${strOrig}\t${nom}\t${strEx}\t${strPU}\t${strTotal}\n`;
+        });
+    });
+
+    // Ligne de total finale bilingue
+    const footer = `\t\t\t\t\t\t\t\t\nTotal à payer TVA incluse / Totaal te betalen BTW inbegrepen\t\t\t\t${totalG.toFixed(2).replace('.', ',')} €`;
+
+    const text = header + "\n" + rows + footer;
+    copierTexte(text);
+    showToast("Détail copié !");
 }
 
 
@@ -986,13 +1021,15 @@ function copierPourExcel() {
     let text = "";
     const volumes = calculateGlobalVolumes();
     
-    document.querySelectorAll('.bloc').forEach(bloc => {
+    document.querySelectorAll('.bloc').forEach((bloc, i) => {
+        const title = bloc.querySelector('.bloc-title').value || `Lot ${i+1}`;
+        // Ligne de titre du bloc (colonne 1 vide, nom en col 2, reste vide)
+        text += `\t${title}\t\t \n`;
+
         bloc.querySelectorAll('tbody tr').forEach(tr => {
             const res = calculateLinePrice(tr, volumes);
             if(!res.valid) return;
 
-            // --- 1. Récupération des valeurs brutes des champs ---
-            // On prend directement ce que l'utilisateur a tapé
             let valOriginaux = parseFloat(tr.querySelector('.ligne-originaux').value) || 1;
             let valExemplaires = parseFloat(tr.querySelector('.ligne-exemplaire').value) || 1;
 
@@ -1003,23 +1040,18 @@ function copierPourExcel() {
             let nom = getDisplayName(cat, type, fmt); 
             let excelPU = res.puFinal;
 
-            // --- 2. Gestion du Minimum de facturation ---
-            // Si le total ligne est < au minimum, on force tout à 1 pour que le total fasse le prix min
             if (res.mint > 0 && (res.qteReelle * res.puFinal) < res.mint) {
                 valOriginaux = 1;
                 valExemplaires = 1; 
                 excelPU = res.mint;  
             } else {
-                // --- 3. Correction A5/A6 (Arrondi Supérieur sur les EXEMPLAIRES) ---
                 if (cat === 'Print' || cat === 'Paper') {
                     if (fmt.includes('A5')) { 
-                        // On divise le nombre d'exemplaires par 2 et on arrondit au-dessus
                         valExemplaires = Math.ceil(valExemplaires / 2); 
                         excelPU = excelPU * 2; 
                         nom = nom.replace('A5', 'A4');
                     } 
                     else if (fmt.includes('A6')) { 
-                        // On divise le nombre d'exemplaires par 4 et on arrondit au-dessus
                         valExemplaires = Math.ceil(valExemplaires / 4); 
                         excelPU = excelPU * 4; 
                         nom = nom.replace('A6', 'A4'); 
@@ -1027,13 +1059,10 @@ function copierPourExcel() {
                 }
             }
             
-            // --- 4. Formatage ---
             const strOrig = valOriginaux.toString().replace('.', ',');
             const strEx = valExemplaires.toString().replace('.', ',');
             const strPU = excelPU.toFixed(4).replace('.', ',');
 
-            // --- 5. Construction de la ligne ---
-            // ORDRE DEMANDÉ : Quantité (Orig) | Nom | Nb Exemplaire | Prix Unitaire
             text += `${strOrig}\t${nom}\t${strEx}\t${strPU}\n`;
         });
     });

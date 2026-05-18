@@ -429,8 +429,13 @@ function calculateGlobalVolumes() {
             }
             
             const qteReelle = (orig * ex);
-            // Clé par format : chaque format a son propre pool dégressif
-            const groupKey = `${cat}|${type}|${fmt}`;
+            // A5/A6 sont imprimés sur A4 → même pool que A4
+            // A3 et plus grands ont leur propre grille → pool séparé par format
+            let poolFmt = fmt;
+            if (cat === 'Print' || cat === 'Paper') {
+                if (fmt.includes('A5') || fmt.includes('A6')) poolFmt = fmt.replace(/A5|A6/, 'A4');
+            }
+            const groupKey = `${cat}|${type}|${poolFmt}`;
             if (!volumesParGroupe[groupKey]) volumesParGroupe[groupKey] = 0;
             volumesParGroupe[groupKey] += qteReelle;
         }
@@ -479,7 +484,11 @@ function calculateLinePrice(tr, globalVolumes) {
             if (res.isFixed) {
                 res.puBase = grille[0].prix || 0;
             } else {
-                const groupKey = `${cat}|${type}|${fmt}`;
+                let poolFmt = fmt;
+                if (cat === 'Print' || cat === 'Paper') {
+                    if (fmt.includes('A5') || fmt.includes('A6')) poolFmt = fmt.replace(/A5|A6/, 'A4');
+                }
+                const groupKey = `${cat}|${type}|${poolFmt}`;
                 let volRef = globalVolumes[groupKey] || 0;
                 
                 // Trouve le bon palier (le plus haut min <= volume réel de ce format)

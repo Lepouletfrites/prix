@@ -421,23 +421,18 @@ function calculateGlobalVolumes() {
              if (window.services[cat][type][fmt][0].fixed_price) isFixed = true;
         } catch(e){}
 
-        if (isFixed) {
-            // Pas d'accumulation de volume pour les frais fixes
-        } else {
-            // --- CORRECTION ICI : Ajout de || cat === 'Paper' ---
-            // Ajustement "Coup de main" pour A5/A6 (optimisation planche)
-            // On arrondit à la planche supérieure pour Print ET Paper
+        if (!isFixed) {
+            // Ajustement planche pour A5/A6 (Print & Paper)
             if (cat === 'Print' || cat === 'Paper') {
                 if (fmt.includes('A5')) ex = Math.ceil(ex / 2) * 2;
                 else if (fmt.includes('A6')) ex = Math.ceil(ex / 4) * 4;
             }
             
             const qteReelle = (orig * ex);
-            const groupKey = `${cat}|${type}`;
+            // Clé par format : chaque format a son propre pool dégressif
+            const groupKey = `${cat}|${type}|${fmt}`;
             if (!volumesParGroupe[groupKey]) volumesParGroupe[groupKey] = 0;
-            
-            // On normalise le volume en équivalent A4 (ou format de base)
-            volumesParGroupe[groupKey] += (qteReelle * getFormatFactor(fmt));
+            volumesParGroupe[groupKey] += qteReelle;
         }
     });
     return volumesParGroupe;
@@ -484,13 +479,11 @@ function calculateLinePrice(tr, globalVolumes) {
             if (res.isFixed) {
                 res.puBase = grille[0].prix || 0;
             } else {
-                const groupKey = `${cat}|${type}`;
+                const groupKey = `${cat}|${type}|${fmt}`;
                 let volRef = globalVolumes[groupKey] || 0;
-                const factor = getFormatFactor(fmt);
-                const volumeLocaL = volRef / factor; // Retour au volume de base pour comparer à la grille
                 
-                // Trouve le bon palier (le plus haut min <= volume)
-                const palier = [...grille].reverse().find(p => (p.min || 0) <= volumeLocaL) || grille[0];
+                // Trouve le bon palier (le plus haut min <= volume réel de ce format)
+                const palier = [...grille].reverse().find(p => (p.min || 0) <= volRef) || grille[0];
                 res.puBase = palier.prix || 0;
                 res.mint = palier.mint || 0;
             }
@@ -953,15 +946,21 @@ function copierDevis() {
 
 function copierDevisDetaille() {
     const volumes = calculateGlobalVolumes();
-    // En-têtes fixes bilingues
-    const header = "Nbre\tType de travail\tExemplaires\tPrix unit.\tTotal orig.\tOmschrijving\tExemplaren\tStukprijs\tTotaal";
+    const TAB = "\t";
+    const NL = "\n";
+
+    // Ligne 1 : en-têtes français
+    const hdr1 = ["Nbre", "Type de travail", "Exemplaires", "Prix unit.", "Total orig."].join(TAB);
+    // Ligne 2 : en-têtes néerlandais (décalés de 5 colonnes)
+    const hdr2 = ["", "", "", "", "", "Omschrijving", "Exemplaren", "Stukprijs", "Totaal"].join(TAB);
+
     let rows = "";
     let totalG = 0;
 
     document.querySelectorAll('.bloc').forEach((bloc, i) => {
-        const title = bloc.querySelector('.bloc-title').value || `Lot ${i+1}`;
-        // Ligne de séparation de bloc (nom, total vide)
-        rows += `\t${title}\t\t\t0,00 €\n`;
+        const title = bloc.querySelector('.bloc-title').value || `Lot ${i + 1}`;
+        // Ligne bloc : col1 vide, col2 = nom du bloc, reste vide sauf total à 0,00 €
+        rows += [TAB + title, "", "", "", "0,00 €"].join(TAB) + NL;
 
         bloc.querySelectorAll('tbody tr').forEach(tr => {
             const res = calculateLinePrice(tr, volumes);
@@ -1003,14 +1002,16 @@ function copierDevisDetaille() {
             const strPU = excelPU.toFixed(4).replace('.', ',');
             const strTotal = lineTotal.toFixed(2).replace('.', ',') + ' €';
 
-            rows += `${strOrig}\t${nom}\t${strEx}\t${strPU}\t${strTotal}\n`;
+            rows += [strOrig, nom, strEx, strPU, strTotal].join(TAB) + NL;
         });
     });
 
-    // Ligne de total finale bilingue
-    const footer = `\t\t\t\t\t\t\t\t\nTotal à payer TVA incluse / Totaal te betalen BTW inbegrepen\t\t\t\t${totalG.toFixed(2).replace('.', ',')} €`;
+    // Ligne de séparation vide + ligne total bilingue
+    const footer =
+        NL +
+        ["Total à payer TVA incluse / Totaal te betalen BTW inbegrepen", "", "", "", totalG.toFixed(2).replace('.', ',') + ' €'].join(TAB);
 
-    const text = header + "\n" + rows + footer;
+    const text = hdr1 + NL + hdr2 + NL + rows + footer;
     copierTexte(text);
     showToast("Détail copié !");
 }
